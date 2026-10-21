@@ -1,0 +1,6 @@
+# Copie para local.properties. Nunca use service_role no aplicativo.
+# sdk.dir=C\:\\Users\\jorge\\AppData\\Local\\Android\\Sdk
+SUPABASE_URL=https://SEU-PROJETO.supabase.co
+SUPABASE_ANON_KEY=SUA_CHAVE_PUBLICA
+# Opcional, conforme exigido pelo provedor da Biblia.
+BIBLE_API_TOKEN=

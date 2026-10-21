@@ -141,3 +141,7 @@ dist
 
 expo-env.d.ts
 # @end expo-cli
+# Keep private environment variants out of version control
+.env.*
+!.env.example
+!.env.*.example
