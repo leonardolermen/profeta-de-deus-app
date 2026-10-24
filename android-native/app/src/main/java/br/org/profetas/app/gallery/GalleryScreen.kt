@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -80,7 +81,8 @@ fun GalleryScreen(viewModel: GalleryViewModel, storageBaseUrl: String, onNavigat
                     .align(Alignment.CenterHorizontally),
             )
 
-            else -> EmptyState("Nenhuma foto publicada neste álbum.")
+            // Com falha, o cartão acima já explica; dizer "nenhuma foto" aqui esconderia que o problema é a conexão.
+            state.failure == null -> EmptyState("Nenhuma foto publicada neste álbum.")
         }
     }
 }
@@ -113,8 +115,19 @@ private fun AlbumFilter(albums: List<String>, selected: String, onSelect: (Strin
             .padding(bottom = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // Sem isso o chip marcado sai no lilás padrão do Material, fora da paleta da igreja.
+        val colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            selectedLabelColor = MaterialTheme.colorScheme.primary,
+        )
+
         albums.forEach { name ->
-            FilterChip(selected = selected == name, onClick = { onSelect(name) }, label = { Text(name) })
+            FilterChip(
+                selected = selected == name,
+                onClick = { onSelect(name) },
+                label = { Text(name) },
+                colors = colors,
+            )
         }
     }
 }
