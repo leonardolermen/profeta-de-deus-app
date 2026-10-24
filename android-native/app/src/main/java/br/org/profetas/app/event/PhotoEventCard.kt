@@ -117,5 +117,6 @@ fun PhotoEventCard(
 private fun subtitleOf(event: Event): String =
     event.description.lineSequence().firstOrNull { line -> line.isNotBlank() } ?: event.type.label
 
-private fun imageOf(event: Event, storageBaseUrl: String): Any =
+// Modelo do Coil: a foto enviada pela igreja (URL) ou, sem ela, a imagem padrão do tipo (@DrawableRes).
+fun imageOf(event: Event, storageBaseUrl: String): Any =
     event.imagePath?.let { path -> StorageBucket.EVENTS.publicUrl(storageBaseUrl, path) } ?: event.type.defaultImage
