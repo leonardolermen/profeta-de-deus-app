@@ -15,12 +15,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // Campo de texto de uma linha para formulários (label/input de app/oracao.tsx — a Início e a
 // Agenda não têm um estilo de campo próprio, então os formulários da igreja usam este). O label é
-// negrito como o styles.label (fontWeight 700) de app/oracao.tsx.
+// negrito como o styles.label (fontWeight 700) de app/oracao.tsx. Login e cadastro têm raio 16 (styles.input de
+// app/auth/*.tsx), por isso o raio é parâmetro.
 @Composable
 fun AppTextField(
     label: String,
@@ -29,7 +32,11 @@ fun AppTextField(
     modifier: Modifier = Modifier,
     placeholder: String = "",
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    cornerRadius: Dp = 12.dp,
 ) {
+    val shape = RoundedCornerShape(cornerRadius)
+
     Column(modifier = modifier) {
         Text(
             text = label,
@@ -44,12 +51,13 @@ fun AppTextField(
             onValueChange = onChange,
             singleLine = true,
             keyboardOptions = keyboardOptions,
+            visualTransformation = visualTransformation,
             textStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface),
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(shape)
                 .background(MaterialTheme.colorScheme.surface)
-                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outline, shape)
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             decorationBox = { innerTextField ->
                 if (value.isEmpty() && placeholder.isNotEmpty()) {
