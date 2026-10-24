@@ -9,8 +9,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import br.org.profetas.app.AppState
 import br.org.profetas.app.AppViewModel
-import br.org.profetas.app.support.ui.EmptyState
-import br.org.profetas.app.support.ui.ScreenColumn
 import br.org.profetas.app.ui.AdminScreen
 import br.org.profetas.app.ui.AuthScreen
 import br.org.profetas.app.ui.BibleScreen
@@ -18,7 +16,6 @@ import br.org.profetas.app.ui.BirthdaysScreen
 import br.org.profetas.app.ui.ContactScreen
 import br.org.profetas.app.ui.EditorScreen
 import br.org.profetas.app.ui.Empty
-import br.org.profetas.app.ui.EventScreen
 import br.org.profetas.app.ui.GalleryScreen
 import br.org.profetas.app.ui.Heading
 import br.org.profetas.app.ui.LoadStatus
@@ -26,7 +23,6 @@ import br.org.profetas.app.ui.Page
 import br.org.profetas.app.ui.PhotoScreen
 import br.org.profetas.app.ui.PrayerScreen
 import br.org.profetas.app.ui.ProfileScreen
-import br.org.profetas.app.ui.RegistrationsScreen
 import br.org.profetas.app.ui.SettingsScreen
 import br.org.profetas.app.ui.StudiesScreen
 import br.org.profetas.app.ui.StudyScreen
@@ -45,7 +41,6 @@ fun NavGraphBuilder.legacyDestinations(appViewModel: AppViewModel, navigator: Na
     legacy(Route.Gallery, appViewModel) { state -> GalleryScreen(state, appViewModel, goPath) }
     legacy(Route.Contact, appViewModel) { state -> ContactScreen(state, appViewModel) }
     legacy(Route.Profile, appViewModel) { state -> ProfileScreen(state, appViewModel) }
-    legacy(Route.MyRegistrations, appViewModel) { state -> RegistrationsScreen(state, appViewModel, goPath) }
     legacy(Route.Admin, appViewModel) { state -> AdminScreen(state, appViewModel, goPath) }
     legacy(Route.History, appViewModel) { state -> HistoryPage(state, appViewModel) }
     legacy(Route.Privacy, appViewModel) { state -> PrivacyPage(state, appViewModel) }
@@ -61,19 +56,8 @@ fun NavGraphBuilder.legacyDestinations(appViewModel: AppViewModel, navigator: Na
     legacy(Route.Photo.PATTERN, appViewModel) { state, entry ->
         PhotoScreen(state, appViewModel.storageBaseUrl, entry.argument("id"))
     }
-    legacy(Route.EventDetail.PATTERN, appViewModel) { state, entry ->
-        EventScreen(state, appViewModel, entry.argument("id"), goPath)
-    }
     legacy(Route.Editor.PATTERN, appViewModel) { state, entry ->
         EditorScreen(state, appViewModel, entry.argument("section"), entry.argument("id"), back)
-    }
-
-    // Projetos e Batismo ganham tela na Task 9; até lá o atalho da Início não cai numa rota inexistente.
-    composable(Route.Campaigns.pattern) {
-        ComingSoon("Os projetos da igreja estarão disponíveis aqui em breve.")
-    }
-    composable(Route.Baptism.pattern) {
-        ComingSoon("As informações sobre batismo estarão disponíveis aqui em breve.")
     }
 }
 
@@ -124,9 +108,3 @@ private fun PrivacyPage(state: AppState, appViewModel: AppViewModel) = Page {
     )
 }
 
-@Composable
-private fun ComingSoon(text: String) {
-    ScreenColumn {
-        EmptyState(text)
-    }
-}

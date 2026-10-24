@@ -7,8 +7,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import br.org.profetas.app.ProfetasApplication
+import br.org.profetas.app.event.registration.Registration
+import br.org.profetas.app.event.registration.RegistrationRepository
+import br.org.profetas.app.event.reminder.EventReminders
 import br.org.profetas.app.event.weekly.WeeklyService
 import br.org.profetas.app.event.weekly.WeeklyServiceRepository
+import br.org.profetas.app.support.message.UserMessages
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -24,14 +28,20 @@ data class EventsState(
     val failure: String? = null,
     val events: List<Event> = emptyList(),
     val weeklyServices: List<WeeklyService> = emptyList(),
+    val registrations: List<Registration> = emptyList(),
+    val reminderIds: Set<String> = emptySet(),
+    val isSaving: Boolean = false,
 )
 
 class EventsViewModel(
     private val events: EventRepository,
     private val weekly: WeeklyServiceRepository,
+    private val registrations: RegistrationRepository,
+    private val reminders: EventReminders,
+    private val userMessages: UserMessages,
 ) : ViewModel() {
 
-    private val mutableState = MutableStateFlow(EventsState())
+    private val mutableState = MutableStateFlow(EventsState(reminderIds = reminders.enabledIds()))
 
     val state: StateFlow<EventsState> = mutableState.asStateFlow()
 
@@ -91,13 +101,104 @@ class EventsViewModel(
             isInPeriod && isOfType && matchesQuery
         }
 
+    fun nextBaptism(now: Instant = Instant.now()): Event? = futureOfType(EventType.BATISMO, now).firstOrNull()
+
+    fun campaigns(now: Instant = Instant.now()): List<Event> = futureOfType(EventType.CAMPANHA, now)
+
+    private fun futureOfType(type: EventType, now: Instant): List<Event> = state.value.events
+        .filter { event -> event.type == type && isFuture(event.date, now) }
+        .sortedBy { event -> eventInstant(event.date) }
+
+    // Sem sessão o repositório devolve lista vazia: é assim que as inscrições somem depois de sair da conta.
+    fun reloadRegistrations() {
+        viewModelScope.launch {
+            refreshRegistrations()
+        }
+    }
+
+    fun enroll(eventId: String, name: String, phone: String) = save("Inscrição confirmada!") {
+        registrations.enroll(eventId, name, phone)
+    }
+
+    fun cancelRegistration(id: String) = save("Inscrição cancelada.") {
+        registrations.cancel(id)
+    }
+
+    fun refreshReminders() {
+        mutableState.update { current -> current.copy(reminderIds = reminders.enabledIds()) }
+    }
+
+    fun setReminder(event: Event) {
+        reminders.schedule(event)
+
+        refreshReminders()
+    }
+
+    fun removeReminder(eventId: String) {
+        reminders.cancel(eventId)
+
+        refreshReminders()
+    }
+
+    fun removeAllReminders() {
+        reminders.enabledIds().forEach(reminders::cancel)
+
+        refreshReminders()
+    }
+
+    private fun save(success: String, block: suspend () -> Unit) {
+        if (state.value.isSaving) {
+            return
+        }
+
+        mutableState.update { current -> current.copy(isSaving = true) }
+
+        viewModelScope.launch {
+            try {
+                block()
+
+                userMessages.show(success)
+                refreshRegistrations()
+            } catch (e: Exception) {
+                if (e is CancellationException) {
+                    throw e
+                }
+
+                userMessages.show(e.message ?: "Não foi possível concluir. Verifique sua conexão.")
+            } finally {
+                mutableState.update { current -> current.copy(isSaving = false) }
+            }
+        }
+    }
+
+    // Falhar ao recarregar a lista não desfaz o que já foi salvo: fica a lista anterior até a próxima tentativa.
+    private suspend fun refreshRegistrations() {
+        try {
+            val mine = registrations.mine()
+
+            mutableState.update { current -> current.copy(registrations = mine) }
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
+            }
+        }
+    }
+
     companion object {
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = this[APPLICATION_KEY] as ProfetasApplication
 
-                EventsViewModel(application.container.events, application.container.weekly)
+                val container = application.container
+
+                EventsViewModel(
+                    events = container.events,
+                    weekly = container.weekly,
+                    registrations = container.registrations,
+                    reminders = container.reminders,
+                    userMessages = container.userMessages,
+                )
             }
         }
     }

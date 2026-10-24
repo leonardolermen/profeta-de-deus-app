@@ -58,6 +58,12 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
         }
     }
 
+    LaunchedEffect(Unit) {
+        container.userMessages.messages.collect { message ->
+            snackbarHost.showSnackbar(message)
+        }
+    }
+
     LaunchedEffect(initialRoute) {
         initialRoute?.takeIf { route -> route != Route.Home }?.let(navigator::go)
     }
@@ -78,7 +84,15 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
             },
             isBusy = eventsState.loading || churchState.loading,
         )
-        Route.Events -> VisibleScreen(reload = eventsViewModel::reload, isBusy = eventsState.loading)
+        Route.Events, Route.Campaigns, Route.Baptism ->
+            VisibleScreen(reload = eventsViewModel::reload, isBusy = eventsState.loading)
+        is Route.EventDetail, Route.MyRegistrations -> VisibleScreen(
+            reload = {
+                eventsViewModel.reload()
+                eventsViewModel.reloadRegistrations()
+            },
+            isBusy = eventsState.loading,
+        )
         else -> VisibleScreen(reload = appViewModel::reload, isBusy = appState.loading || appState.saving)
     }
 
@@ -130,6 +144,8 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
                             onNavigate = navigator::go,
                         )
                     }
+
+                    eventDestinations(container, eventsViewModel, navigator)
 
                     legacyDestinations(appViewModel, navigator)
                 }

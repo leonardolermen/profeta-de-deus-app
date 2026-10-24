@@ -8,6 +8,7 @@ import br.org.profetas.app.birthday.BirthdayRepository
 import br.org.profetas.app.church.ChurchRepository
 import br.org.profetas.app.event.EventRepository
 import br.org.profetas.app.event.registration.RegistrationRepository
+import br.org.profetas.app.event.reminder.ReminderScheduler
 import br.org.profetas.app.event.weekly.WeeklyServiceRepository
 import br.org.profetas.app.gallery.GalleryRepository
 import br.org.profetas.app.prayer.PrayerRepository
@@ -52,6 +53,9 @@ class AppContainer(context: Context) {
     val bible = BibleRepository(client)
 
     val userMessages = UserMessages()
+
+    // Mesmo arquivo de preferências do AppViewModel: os lembretes já ativados continuam valendo.
+    val reminders = ReminderScheduler(context, context.getSharedPreferences("preferences", Context.MODE_PRIVATE))
 
     val isConfigured: Boolean get() = client.isConfigured
 

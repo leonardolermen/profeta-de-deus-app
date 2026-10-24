@@ -1,11 +1,6 @@
 package br.org.profetas.app.ui
 
-import android.Manifest
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,13 +13,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import br.org.profetas.app.*
 import br.org.profetas.app.R
-import br.org.profetas.app.event.Event
-import br.org.profetas.app.event.EventType
-import br.org.profetas.app.event.displayDate
-import br.org.profetas.app.event.isFuture
 import br.org.profetas.app.support.intent.openLink
 import br.org.profetas.app.support.intent.share
 import coil.compose.SubcomposeAsyncImage
@@ -33,39 +23,6 @@ import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
 
-@Composable fun EventScreen(s:AppState,vm:AppViewModel,id:String,go:(String)->Unit) = Page {
-    val event=s.events.find { it.id==id }
-    if(event==null) { Empty(if(s.loading) "Carregando evento…" else "Evento indisponível."); LoadStatus(s,"Eventos",vm::reload); return@Page }
-    val context=LocalContext.current
-    Heading(event.title,displayDate(event.date))
-    Text(event.description.ifBlank {"Mais informações serão publicadas pela igreja."})
-    OutlinedButton(onClick={share(context,"${event.title}\n${displayDate(event.date)}\n${event.description}")}) {Text("Compartilhar evento")}
-    val permission=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { allowed -> if(allowed) vm.reminder(event,true) else vm.message("Permita as notificações nas configurações do Android para receber o lembrete.") }
-    if(isFuture(event.date)) {
-        OutlinedButton(onClick={
-            if(id in s.reminders) vm.reminder(event,false)
-            else if(Build.VERSION.SDK_INT>=33 && ContextCompat.checkSelfPermission(context,Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED) permission.launch(Manifest.permission.POST_NOTIFICATIONS)
-            else vm.reminder(event,true)
-        }) {Text(if(id in s.reminders) "Remover lembrete" else "Lembrar 1 hora antes")}
-        Text("O horário do lembrete depende das condições de bateria e conexão do aparelho.",style=MaterialTheme.typography.bodySmall)
-        if(!s.loggedIn) Button(onClick={go("auth")}) {Text("Entrar para se inscrever")}
-        else {
-            val registration=s.registrations.find {it.eventId==id && it.userId==s.profile?.id}
-            if(registration!=null) Panel("Inscrição confirmada",registration.name) { TextButton(onClick={go("registrations")}) {Text("Gerenciar inscrição")} }
-            else {
-                var name by rememberSaveable(s.profile?.id) {mutableStateOf(s.profile?.name.orEmpty())}
-                var phone by rememberSaveable {mutableStateOf("")}
-                var accepted by rememberSaveable {mutableStateOf(false)}
-                Heading(if(event.type==EventType.BATISMO) "Quero me batizar" else "Participar deste evento")
-                Field("Nome completo",name,{name=it.take(120)})
-                Field("Telefone com DDD",phone,{phone=it.take(25)})
-                Row {Checkbox(accepted,{accepted=it}); Text("Autorizo o contato da igreja sobre esta inscrição.",Modifier.weight(1f).padding(top=10.dp))}
-                TextButton(onClick={go("privacy")}) {Text("Consultar privacidade")}
-                Button(enabled=!s.saving && name.trim().length>=2 && phone.count {it.isDigit()}>=8 && accepted,onClick={vm.action("Inscrição confirmada!") {registrations.enroll(id,name,phone)}}) {Text("Confirmar inscrição")}
-            }
-        }
-    } else Empty("Este evento já aconteceu.")
-}
 @Composable fun PrayerScreen(s:AppState,vm:AppViewModel,done:()->Unit) = Page {
     Heading("Como podemos orar por você?", "Seu pedido será acessado somente pela administração pastoral.")
     var name by rememberSaveable {mutableStateOf("")}
@@ -139,16 +96,4 @@ import java.util.Locale
     if(c.phone.isNotBlank()) Panel("Telefone",c.phone,{openLink(context,"tel:${Uri.encode(c.phone)}")})
     if(c.email.isNotBlank()) Panel("E-mail",c.email,{openLink(context,"mailto:${Uri.encode(c.email)}")})
     if(c.address.isNotBlank()) Panel("Como chegar",c.address,{openLink(context,"geo:0,0?q=${Uri.encode(c.address)}")})
-}
-@Composable fun RegistrationsScreen(s:AppState,vm:AppViewModel,go:(String)->Unit) = Page {
-    Heading("Minhas inscrições")
-    var cancelId by remember {mutableStateOf<String?>(null)}
-    if(!s.loggedIn) {Button(onClick={go("auth")}) {Text("Entrar")}; return@Page}
-    LoadStatus(s,"Inscrições",vm::reload)
-    val own=s.registrations.filter {it.userId==s.profile?.id}
-    if(own.isEmpty() && !s.loading) Empty("Você ainda não tem inscrições.")
-    own.forEach { r -> Panel(s.events.find {it.id==r.eventId}?.title ?: "Evento",r.name,{go("event/${r.eventId}")}) {
-        TextButton(onClick={cancelId=r.id},enabled=!s.saving) {Text("Cancelar inscrição")}
-    } }
-    cancelId?.let { id -> AlertDialog(onDismissRequest={cancelId=null},title={Text("Cancelar inscrição?")},text={Text("Você poderá se inscrever novamente se o evento ainda estiver disponível.")},confirmButton={TextButton(onClick={cancelId=null; vm.action("Inscrição cancelada.") {registrations.cancel(id)}}) {Text("Cancelar inscrição")}},dismissButton={TextButton(onClick={cancelId=null}) {Text("Manter")}}) }
 }

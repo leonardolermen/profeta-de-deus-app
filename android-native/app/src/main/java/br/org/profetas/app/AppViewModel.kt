@@ -55,16 +55,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val values = readSet(type).toMutableSet(); if (!values.add(id)) values.remove(id)
         prefs.edit().putStringSet(localKey(type), values).apply()
     }
-    fun reminder(event: Event, enabled: Boolean) {
-        if (enabled) EventReminder.schedule(getApplication(), event) else EventReminder.cancel(getApplication(), event.id)
-        val values = state.value.reminders.toMutableSet()
-        if (enabled) values.add(event.id) else values.remove(event.id)
-        prefs.edit().putStringSet("reminders", values).apply()
-        mutable.update { it.copy(reminders = values) }
-    }
+    // Até a Task 15 a tela antiga de Ajustes ainda desativa lembretes por aqui; quem agenda é o ReminderScheduler.
     fun cancelReminders() {
-        state.value.reminders.forEach { EventReminder.cancel(getApplication(), it) }
-        prefs.edit().remove("reminders").apply(); mutable.update { it.copy(reminders = emptySet()) }
+        container.reminders.enabledIds().forEach(container.reminders::cancel)
+        mutable.update { it.copy(reminders = container.reminders.enabledIds()) }
     }
     fun reload() {
         if (state.value.loading) return
@@ -87,7 +81,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     if (ContentAccess.canManage(state.value.profile)) load("Orações", { container.prayers.all() }) { s,v -> s.copy(prayers=v) }
                 } else mutable.update { it.copy(birthdays = emptyList()) }
             }
-            mutable.update { it.copy(loading = false, loggedIn = account.session != null, email = account.session?.email.orEmpty(), completed=readSet("studies"), favorites=readSet("favorites"), reminders=prefs.getStringSet("reminders", emptySet())!!.toSet()) }
+            mutable.update { it.copy(loading = false, loggedIn = account.session != null, email = account.session?.email.orEmpty(), completed=readSet("studies"), favorites=readSet("favorites"), reminders=container.reminders.enabledIds()) }
         }
     }
     fun action(success: String, onSuccess: () -> Unit = {}, block: suspend AppContainer.() -> Unit) {
