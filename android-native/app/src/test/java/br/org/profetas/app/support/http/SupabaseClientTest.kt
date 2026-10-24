@@ -64,7 +64,8 @@ class SupabaseClientTest {
         server.shutdown()
     }
 
-    private fun config() = SupabaseConfig(server.url("/").toString().trimEnd('/'), "anon-key")
+    private fun config() =
+        SupabaseConfig(server.url("/").toString().trimEnd('/'), "anon-key", allowLocalHttp = false)
 
     @Test fun sendsApiKeyAndBearerOfCurrentSession() = runTest {
         val storage = InMemorySessionStorage(Session("A", "R", "u", "e"))
@@ -188,7 +189,8 @@ class SupabaseClientTest {
 
     @Test fun refusesWhenNotConfigured() = runTest {
         val storage = InMemorySessionStorage(null)
-        val client = SupabaseClient(SupabaseConfig("http://" + server.hostName, "anon-key"), storage, http)
+        val config = SupabaseConfig("http://" + server.hostName, "anon-key", allowLocalHttp = false)
+        val client = SupabaseClient(config, storage, http)
 
         val error = runCatching { client.get("/rest/v1/eventos") }.exceptionOrNull()
 

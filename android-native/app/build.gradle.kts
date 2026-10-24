@@ -30,7 +30,16 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildTypes { release { isMinifyEnabled = false } }
+    buildTypes {
+        debug {
+            // Só o build debug fala http com o Supabase local do emulador (10.0.2.2); release é só https.
+            buildConfigField("boolean", "ALLOW_LOCAL_HTTP", "true")
+        }
+        release {
+            isMinifyEnabled = false
+            buildConfigField("boolean", "ALLOW_LOCAL_HTTP", "false")
+        }
+    }
 }
 dependencies {
     implementation(platform("androidx.compose:compose-bom:2025.04.01"))
