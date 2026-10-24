@@ -8,12 +8,12 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.*
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import br.org.profetas.app.AppViewModel
+import br.org.profetas.app.theme.ProfetasTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun ProfetasApp(vm: AppViewModel, initialEvent: String?, recovery: String?) {
@@ -22,14 +22,12 @@ import br.org.profetas.app.AppViewModel
     val current by nav.currentBackStackEntryAsState()
     val route = current?.destination?.route ?: "home"
     val snackbar = remember { SnackbarHostState() }
-    val primary = Color(0xFF0056B3)
-    val scheme = if(state.dark) darkColorScheme(primary=Color(0xFF9FCAFF)) else lightColorScheme(primary=primary, background=Color(0xFFF7F9FC), surface=Color.White, secondary=Color(0xFF957445))
     LaunchedEffect(state.message) { state.message?.let { snackbar.showSnackbar(it); vm.dismissMessage() } }
     LaunchedEffect(initialEvent) { initialEvent?.let { nav.navigate("event/$it") } }
     LaunchedEffect(recovery) { recovery?.let { link -> vm.action("Defina sua nova senha no perfil.", {nav.navigate("profile")}) {acceptRecovery(link)} } }
     val roots = listOf("home", "bible", "events", "community", "settings")
     fun go(path: String) { nav.navigate(path) { launchSingleTop=true } }
-    MaterialTheme(colorScheme=scheme) {
+    ProfetasTheme(isDark=state.dark) {
         Scaffold(
             topBar={ TopAppBar(title={ Text("Profetas de Deus") }, navigationIcon={ if(route !in roots) IconButton(onClick={ nav.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack,"Voltar") } }, actions={ IconButton(onClick=vm::reload, enabled=!state.loading) { Icon(Icons.Default.Refresh,"Atualizar dados") } }) },
             bottomBar={ if(route in roots) NavigationBar {
