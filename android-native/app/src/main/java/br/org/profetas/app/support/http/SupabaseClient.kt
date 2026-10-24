@@ -3,6 +3,9 @@ package br.org.profetas.app.support.http
 import br.org.profetas.app.support.session.Session
 import br.org.profetas.app.support.session.SessionStorage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -21,9 +24,12 @@ class SupabaseClient(
     private val http: OkHttpClient,
 ) {
 
-    @Volatile
-    var session: Session? = storage.load()
-        private set
+    private val mutableSessionState = MutableStateFlow(storage.load())
+
+    // Fonte única da sessão: quem precisa reagir a login, logout ou renovação recusada observa este fluxo.
+    val sessionState: StateFlow<Session?> = mutableSessionState.asStateFlow()
+
+    val session: Session? get() = mutableSessionState.value
 
     val isConfigured: Boolean get() = config.isUsable
 
@@ -71,12 +77,12 @@ class SupabaseClient(
     }
 
     fun adoptSession(session: Session) {
-        this.session = session
+        mutableSessionState.value = session
         storage.save(session)
     }
 
     fun dropSession() {
-        session = null
+        mutableSessionState.value = null
         storage.clear()
     }
 

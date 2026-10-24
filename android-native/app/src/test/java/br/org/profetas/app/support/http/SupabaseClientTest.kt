@@ -117,6 +117,17 @@ class SupabaseClientTest {
         assertTrue(storage.cleared)
     }
 
+    @Test fun sessionStateClearsWhenRefreshFails() = runTest {
+        val storage = InMemorySessionStorage(Session("A", "R", "u", "e"))
+        val client = SupabaseClient(config(), storage, http)
+        server.enqueue(MockResponse().setResponseCode(401))
+        server.enqueue(MockResponse().setResponseCode(400))
+
+        runCatching { client.get("/rest/v1/eventos") }
+
+        assertNull(client.sessionState.value)
+    }
+
     @Test fun mapsStatusToFriendlyMessage() = runTest {
         val storage = InMemorySessionStorage(Session("A", "R", "u", "e"))
         val client = SupabaseClient(config(), storage, http)

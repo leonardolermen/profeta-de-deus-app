@@ -15,6 +15,9 @@ import br.org.profetas.app.support.http.SupabaseClient
 import br.org.profetas.app.support.http.SupabaseConfig
 import br.org.profetas.app.support.message.UserMessages
 import br.org.profetas.app.support.session.KeystoreSessionStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
@@ -30,7 +33,10 @@ class AppContainer(context: Context) {
 
     private val client = SupabaseClient(config, KeystoreSessionStorage(context), http)
 
-    val account = AccountRepository(client)
+    // Vive o processo inteiro, como o próprio container; só mantém os estados derivados da sessão.
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    val account = AccountRepository(client, applicationScope)
 
     private val guard = ContentWriteGuard(account)
 

@@ -5,18 +5,28 @@ import br.org.profetas.app.support.http.SupabaseClient
 import br.org.profetas.app.support.http.rows
 import br.org.profetas.app.support.http.textOrEmpty
 import br.org.profetas.app.support.session.Session
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import org.json.JSONObject
 
-class AccountRepository(private val client: SupabaseClient) {
+class AccountRepository(private val client: SupabaseClient, scope: CoroutineScope) {
 
-    private val profileState = MutableStateFlow<Profile?>(null)
-    private val loggedInState = MutableStateFlow(client.session != null)
+    private val loadedProfile = MutableStateFlow<Profile?>(null)
 
-    val currentProfile: StateFlow<Profile?> = profileState.asStateFlow()
-    val isLoggedIn: StateFlow<Boolean> = loggedInState.asStateFlow()
+    // Derivados da sessão do SupabaseClient: uma renovação recusada em qualquer repositório derruba a sessão lá,
+    // e o perfil carregado (talvez de admin) deixa de valer junto, sem depender de quem fez a chamada.
+    val isLoggedIn: StateFlow<Boolean> = client.sessionState
+        .map { session -> session != null }
+        .stateIn(scope, SharingStarted.Eagerly, client.session != null)
+
+    val currentProfile: StateFlow<Profile?> = combine(loadedProfile, client.sessionState) { profile, session ->
+        profile?.takeIf { loaded -> loaded.id == session?.userId }
+    }.stateIn(scope, SharingStarted.Eagerly, null)
 
     val session: Session? get() = client.session
     val isConfigured: Boolean get() = client.isConfigured
@@ -28,8 +38,6 @@ class AccountRepository(private val client: SupabaseClient) {
             .put("email", email.trim())
             .put("password", password)
         client.adoptSession(JSONObject(client.anonymousPost("/auth/v1/token?grant_type=password", body)))
-
-        publishSession()
     }
 
     suspend fun register(name: String, email: String, password: String): Boolean {
@@ -46,7 +54,6 @@ class AccountRepository(private val client: SupabaseClient) {
             client.adoptSession(result)
         }
 
-        publishSession()
         return loggedIn
     }
 
@@ -69,8 +76,6 @@ class AccountRepository(private val client: SupabaseClient) {
 
         val user = client.fetchUser(access)
         client.adoptSession(Session(access, refresh, user.getString("id"), user.optString("email")))
-
-        publishSession()
     }
 
     suspend fun updatePassword(password: String) {
@@ -84,8 +89,7 @@ class AccountRepository(private val client: SupabaseClient) {
             }
         } finally {
             client.dropSession()
-            profileState.value = null
-            publishSession()
+            loadedProfile.value = null
         }
     }
 
@@ -94,9 +98,7 @@ class AccountRepository(private val client: SupabaseClient) {
             client.rows("perfis", "select=*&id=eq.${activeSession.userId}").firstOrNull()?.toProfile()
         }
 
-        profileState.value = profile
-        // A consulta pode ter renovado ou derrubado a sessão (renovação recusada pelo servidor).
-        publishSession()
+        loadedProfile.value = profile
 
         return profile
     }
@@ -104,10 +106,6 @@ class AccountRepository(private val client: SupabaseClient) {
     suspend fun saveName(name: String) {
         val id = requireNotNull(session).userId
         client.patch("/rest/v1/perfis?id=eq.$id", JSONObject().put("nome", name.trim()))
-    }
-
-    private fun publishSession() {
-        loggedInState.value = client.session != null
     }
 
     private fun JSONObject.toProfile(): Profile = Profile(

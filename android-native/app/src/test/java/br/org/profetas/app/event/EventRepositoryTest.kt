@@ -6,6 +6,7 @@ import br.org.profetas.app.support.http.SupabaseClient
 import br.org.profetas.app.support.http.SupabaseConfig
 import br.org.profetas.app.support.session.Session
 import br.org.profetas.app.support.session.SessionStorage
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
@@ -40,15 +41,15 @@ class EventRepositoryTest {
     }
 
     // 127.0.0.1 com allowLocalHttp é o caminho do Supabase local em debug: evita montar https só para o teste.
-    private fun repository(): EventRepository {
+    private fun repository(scope: CoroutineScope): EventRepository {
         val config = SupabaseConfig("http://127.0.0.1:${server.port}", "anon-key", allowLocalHttp = true)
         val client = SupabaseClient(config, NoSessionStorage(), OkHttpClient())
 
-        return EventRepository(client, ContentWriteGuard(AccountRepository(client)))
+        return EventRepository(client, ContentWriteGuard(AccountRepository(client, scope)))
     }
 
     @Test fun readsImagePathAndType() = runTest {
-        val repository = repository()
+        val repository = repository(backgroundScope)
         server.enqueue(
             MockResponse().setBody(
                 """[{"id":"1","titulo":"T","descricao":null,"data_evento":"2026-06-25T10:00:00-03:00",""" +
