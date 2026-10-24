@@ -52,39 +52,42 @@ fun EventsScreen(viewModel: EventsViewModel, storageBaseUrl: String, onNavigate:
     val events = viewModel.filtered(query, type, includePast)
 
     // A barra de status já vem no padding do Scaffold; 24 + a barra fica perto dos 60 de paddingTop do Expo.
+    // O recuo lateral de 20 fica só na coluna interna: o carrossel ocupa a largura toda para o vizinho aparecer.
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 60.dp),
+            .padding(top = 24.dp, bottom = 60.dp),
     ) {
-        Header(onNavigate)
+        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+            Header(onNavigate)
 
-        SearchBox(
-            value = query,
-            onChange = { text -> query = text },
-            placeholder = "Buscar por culto ou retiro...",
-            modifier = Modifier.shadow(elevation = 2.dp, shape = RoundedCornerShape(14.dp)),
-        )
-
-        TypeChips(selected = type, onSelect = { selected -> type = selected })
-
-        IncludePastRow(checked = includePast, onChange = { checked -> includePast = checked })
-
-        state.failure?.let { failure ->
-            LoadFailure(
-                message = failure,
-                onRetry = viewModel::reload,
-                modifier = Modifier.padding(top = 12.dp),
+            SearchBox(
+                value = query,
+                onChange = { text -> query = text },
+                placeholder = "Buscar por culto ou retiro...",
+                modifier = Modifier.shadow(elevation = 2.dp, shape = RoundedCornerShape(14.dp)),
             )
+
+            TypeChips(selected = type, onSelect = { selected -> type = selected })
+
+            IncludePastRow(checked = includePast, onChange = { checked -> includePast = checked })
+
+            state.failure?.let { failure ->
+                LoadFailure(
+                    message = failure,
+                    onRetry = viewModel::reload,
+                    modifier = Modifier.padding(top = 12.dp),
+                )
+            }
+
+            SectionHeading(title = "Cultos Semanais", modifier = Modifier.padding(top = 30.dp))
+
+            WeeklyServicesSection(services = state.weeklyServices, isLoading = state.loading)
+
+            SectionHeading(title = "Eventos Especiais", modifier = Modifier.padding(top = 30.dp))
         }
-
-        SectionHeading(title = "Cultos Semanais", modifier = Modifier.padding(top = 30.dp))
-
-        WeeklyServicesSection(services = state.weeklyServices, isLoading = state.loading)
-
-        SectionHeading(title = "Eventos Especiais", modifier = Modifier.padding(top = 30.dp))
 
         SpecialEvents(
             events = events,
@@ -223,8 +226,8 @@ private fun SectionHeading(title: String, modifier: Modifier = Modifier) {
     )
 }
 
-// O Expo mostrava os eventos num carrossel horizontal; aqui a lista é filtrável, então vai na vertical, com o
-// mesmo cartão de foto da Início.
+// Carrossel horizontal como o do Expo, com o mesmo cartão de foto da Início; os filtros só mudam quais
+// eventos entram.
 @Composable
 private fun SpecialEvents(
     events: List<Event>,
@@ -233,31 +236,25 @@ private fun SpecialEvents(
     storageBaseUrl: String,
     onOpen: (Event) -> Unit,
 ) {
-    if (events.isEmpty()) {
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 20.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            EmptyState(if (hasAnyEvent) "Nenhum evento encontrado." else "Nenhum evento especial no momento.")
-        }
+    if (events.isNotEmpty()) {
+        EventCarousel(events = events, storageBaseUrl = storageBaseUrl, onOpen = onOpen)
 
         return
     }
 
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        events.forEach { event ->
-            PhotoEventCard(
-                event = event,
-                storageBaseUrl = storageBaseUrl,
-                onClick = { onOpen(event) },
-                modifier = Modifier.fillMaxWidth(),
-            )
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 20.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
         }
+    } else {
+        EmptyState(
+            text = if (hasAnyEvent) "Nenhum evento encontrado." else "Nenhum evento especial no momento.",
+            modifier = Modifier.padding(horizontal = 20.dp),
+        )
     }
 }
