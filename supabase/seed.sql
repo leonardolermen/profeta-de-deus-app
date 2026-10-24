@@ -57,6 +57,9 @@ insert into public.cultos_semanais (nome, dia_semana, horarios, destaque, local,
 -- Dados da igreja (a linha com id=1 ja existe, criada pela migracao inicial).
 update public.igreja set
   endereco = 'R. Marli, 191 - São Paulo',
+  telefone = '(11) 3456-7890',
+  whatsapp = '(11) 91234-5678',
+  email = 'contato@exemplo.local',
   historia = '(Exemplo para desenvolvimento local) Fundada por um pequeno grupo de familias em busca de um '
     || 'lugar de fe e comunhao, a igreja cresceu ao longo dos anos e hoje reune a comunidade em torno da '
     || 'palavra, da oracao e do servico ao proximo.'
