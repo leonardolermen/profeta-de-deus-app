@@ -22,6 +22,8 @@ import androidx.core.content.ContextCompat
 import br.org.profetas.app.*
 import br.org.profetas.app.R
 import br.org.profetas.app.data.*
+import br.org.profetas.app.support.intent.openLink
+import br.org.profetas.app.support.intent.share
 import coil.compose.SubcomposeAsyncImage
 import java.time.LocalDate
 import java.time.Month

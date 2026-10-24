@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import br.org.profetas.app.*
+import br.org.profetas.app.support.intent.share
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable fun BibleScreen(s:AppState,vm:AppViewModel) {

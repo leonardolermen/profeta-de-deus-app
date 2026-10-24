@@ -1,10 +1,5 @@
 package br.org.profetas.app.ui
 
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -43,11 +38,4 @@ import br.org.profetas.app.AppState
     state.errors[section]?.let { error ->
         Panel("Não foi possível carregar", error) { TextButton(onClick=retry, enabled=!state.loading) { Text("Tentar novamente") } }
     }
-}
-fun openLink(context: Context, url: String) {
-    try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
-    catch (_: ActivityNotFoundException) { Toast.makeText(context,"Nenhum aplicativo disponível para abrir este contato.",Toast.LENGTH_LONG).show() }
-}
-fun share(context: Context, text: String) {
-    context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply { type="text/plain"; putExtra(Intent.EXTRA_TEXT,text) }, "Compartilhar"))
 }
