@@ -18,7 +18,7 @@ import br.org.profetas.app.support.intent.share
     var abbrev by rememberSaveable {mutableStateOf<String?>(null)}
     var number by rememberSaveable {mutableIntStateOf(0)}
     var favoritesOnly by rememberSaveable {mutableStateOf(false)}
-    val book=s.books.find {it.abbrev==abbrev}
+    val book=s.books.find {it.abbreviation==abbrev}
     val context=LocalContext.current
     LaunchedEffect(Unit) {vm.loadBooks()}
     LaunchedEffect(abbrev,number,s.books) {if(book!=null && number>0) vm.loadChapter(book,number)}
@@ -39,7 +39,7 @@ import br.org.profetas.app.support.intent.share
             } }
         } else if(book==null) {
             item {Field("Buscar livro",query,{query=it})}
-            items(s.books.filter {it.name.contains(query,true)},key={it.abbrev}) { b -> Panel(b.name,"${b.chapters} capítulos",{abbrev=b.abbrev;number=0}) }
+            items(s.books.filter {it.name.contains(query,true)},key={it.abbreviation}) { b -> Panel(b.name,"${b.chapters} capítulos",{abbrev=b.abbreviation;number=0}) }
         } else if(number==0) {
             item {Heading(book.name,"Escolha um capítulo")}
             item {FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {

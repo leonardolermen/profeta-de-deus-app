@@ -19,7 +19,7 @@ class BibleRepository(
     }
 
     suspend fun chapter(book: Book, number: Int): Chapter {
-        val json = JSONObject(request("verses/nvi/${book.abbrev}/$number"))
+        val json = JSONObject(request("verses/nvi/${book.abbreviation}/$number"))
         val verses = json.getJSONArray("verses")
 
         return Chapter(
@@ -33,7 +33,7 @@ class BibleRepository(
 
     private fun JSONObject.toBook(): Book = Book(
         name = getString("name"),
-        abbrev = getJSONObject("abbrev").getString("pt"),
+        abbreviation = getJSONObject("abbrev").getString("pt"),
         chapters = getInt("chapters"),
     )
 
