@@ -1,0 +1,97 @@
+package br.org.profetas.app.prayer
+
+import br.org.profetas.app.account.AccountRepository
+import br.org.profetas.app.account.ContentWriteGuard
+import br.org.profetas.app.support.http.SupabaseClient
+import br.org.profetas.app.support.http.SupabaseConfig
+import br.org.profetas.app.support.message.UserMessages
+import br.org.profetas.app.support.session.Session
+import br.org.profetas.app.support.session.SessionStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import okhttp3.OkHttpClient
+import okhttp3.mockwebserver.Dispatcher
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.RecordedRequest
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Before
+import org.junit.Test
+import java.util.concurrent.atomic.AtomicInteger
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class PrayerViewModelTest {
+
+    // Enviar um pedido não exige sessão: qualquer visitante pode orar pelo Expo original.
+    private class VisitorSessionStorage : SessionStorage {
+
+        override fun load(): Session? = null
+
+        override fun save(session: Session) {
+        }
+
+        override fun clear() {
+        }
+    }
+
+    private val server = MockWebServer()
+
+    private val prayerPosts = AtomicInteger()
+
+    private val userMessages = UserMessages()
+
+    @Before fun startServer() {
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                prayerPosts.incrementAndGet()
+
+                return MockResponse().setResponseCode(201)
+            }
+        }
+        server.start()
+    }
+
+    @After fun stopServer() {
+        Dispatchers.resetMain()
+        server.shutdown()
+    }
+
+    // O "repositório falso" é o PrayerRepository de verdade contra um MockWebServer, como nos outros ViewModels.
+    private fun TestScope.viewModel(scope: CoroutineScope): PrayerViewModel {
+        Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
+
+        val config = SupabaseConfig("http://127.0.0.1:${server.port}", "anon-key", allowLocalHttp = true)
+        val client = SupabaseClient(config, VisitorSessionStorage(), OkHttpClient())
+        val guard = ContentWriteGuard(AccountRepository(client, scope))
+
+        return PrayerViewModel(prayers = PrayerRepository(client, guard), messages = userMessages)
+    }
+
+    @Test fun rejectsShortRequestWithoutCallingRepository() = runTest {
+        val viewModel = viewModel(backgroundScope)
+
+        viewModel.send("Maria Aparecida", "oi")
+
+        assertEquals(0, prayerPosts.get())
+    }
+
+    @Test fun successMessageIsTheExistingOne() = runTest {
+        val viewModel = viewModel(backgroundScope)
+
+        val message = async(start = CoroutineStart.UNDISPATCHED) { userMessages.messages.first() }
+        viewModel.send("Maria Aparecida", "Por favor, orem pela minha família nesse momento difícil.")
+
+        assertEquals("Pedido enviado à equipe pastoral.", message.await())
+        assertEquals(1, prayerPosts.get())
+    }
+}

@@ -18,32 +18,7 @@ import br.org.profetas.app.R
 import br.org.profetas.app.support.intent.openLink
 import br.org.profetas.app.support.intent.share
 import coil.compose.SubcomposeAsyncImage
-import java.time.LocalDate
-import java.time.Month
-import java.time.format.TextStyle
-import java.util.Locale
 
-@Composable fun PrayerScreen(s:AppState,vm:AppViewModel,done:()->Unit) = Page {
-    Heading("Como podemos orar por você?", "Seu pedido será acessado somente pela administração pastoral.")
-    var name by rememberSaveable {mutableStateOf("")}
-    var text by rememberSaveable {mutableStateOf("")}
-    Field("Seu nome",name,{name=it.take(120)})
-    Field("Pedido de oração",text,{text=it.take(4000)},true)
-    Text("${text.length}/4000",style=MaterialTheme.typography.bodySmall)
-    Button(enabled=!s.saving && name.trim().length>=2 && text.trim().length>=5,onClick={vm.action("Pedido enviado à equipe pastoral.",done) {prayers.send(name,text)}}) {Text("Enviar pedido")}
-}
-@Composable fun BirthdaysScreen(s:AppState,vm:AppViewModel,go:(String)->Unit) = Page {
-    Heading("Aniversariantes", "Celebre a vida de quem caminha com você.")
-    if(!s.loggedIn) {Empty("Entre para consultar os aniversariantes que autorizaram a divulgação."); Button(onClick={go("auth")}) {Text("Entrar")}; return@Page}
-    var month by rememberSaveable {mutableIntStateOf(LocalDate.now().monthValue)}
-    Row(Modifier.horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-        (1..12).forEach { m -> FilterChip(selected=month==m,onClick={month=m},label={Text(Month.of(m).getDisplayName(TextStyle.SHORT,Locale.forLanguageTag("pt-BR")))}) }
-    }
-    LoadStatus(s,"Aniversariantes",vm::reload)
-    val birthdays=s.birthdays.filter {it.month==month}
-    if(birthdays.isEmpty() && !s.loading) Empty("Nenhum aniversariante publicado neste mês.")
-    birthdays.forEach {Panel(it.name,"Dia ${it.day}")}
-}
 @Composable fun GalleryScreen(s:AppState,vm:AppViewModel,go:(String)->Unit) = Page {
     Heading("Memórias da comunidade")
     var album by rememberSaveable {mutableStateOf("Todos")}

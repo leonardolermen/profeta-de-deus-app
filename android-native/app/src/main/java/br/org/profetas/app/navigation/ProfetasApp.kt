@@ -22,10 +22,12 @@ import androidx.navigation.compose.rememberNavController
 import br.org.profetas.app.AppContainer
 import br.org.profetas.app.AppViewModel
 import br.org.profetas.app.bible.BibleViewModel
+import br.org.profetas.app.birthday.BirthdaysViewModel
 import br.org.profetas.app.church.ChurchViewModel
 import br.org.profetas.app.event.EventsScreen
 import br.org.profetas.app.event.EventsViewModel
 import br.org.profetas.app.home.HomeScreen
+import br.org.profetas.app.prayer.PrayerViewModel
 import br.org.profetas.app.study.StudiesViewModel
 import br.org.profetas.app.theme.ProfetasTheme
 
@@ -40,12 +42,15 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
     val churchViewModel: ChurchViewModel = viewModel(factory = ChurchViewModel.Factory)
     val bibleViewModel: BibleViewModel = viewModel(factory = BibleViewModel.Factory)
     val studiesViewModel: StudiesViewModel = viewModel(factory = StudiesViewModel.Factory)
+    val prayerViewModel: PrayerViewModel = viewModel(factory = PrayerViewModel.Factory)
+    val birthdaysViewModel: BirthdaysViewModel = viewModel(factory = BirthdaysViewModel.Factory)
 
     val appState by appViewModel.state.collectAsStateWithLifecycle()
     val eventsState by eventsViewModel.state.collectAsStateWithLifecycle()
     val churchState by churchViewModel.state.collectAsStateWithLifecycle()
     val bibleState by bibleViewModel.state.collectAsStateWithLifecycle()
     val studiesState by studiesViewModel.state.collectAsStateWithLifecycle()
+    val birthdaysState by birthdaysViewModel.state.collectAsStateWithLifecycle()
     val profile by container.account.currentProfile.collectAsStateWithLifecycle()
 
     val navController = rememberNavController()
@@ -102,6 +107,7 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
         Route.Bible -> VisibleScreen(reload = bibleViewModel::reload, isBusy = bibleState.isBusy)
         Route.Studies, is Route.Study ->
             VisibleScreen(reload = studiesViewModel::reload, isBusy = studiesState.loading)
+        Route.Birthdays -> VisibleScreen(reload = birthdaysViewModel::reload, isBusy = birthdaysState.loading)
         else -> VisibleScreen(reload = appViewModel::reload, isBusy = appState.loading || appState.saving)
     }
 
@@ -157,6 +163,8 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
                     eventDestinations(container, eventsViewModel, navigator)
 
                     bibleDestinations(container, bibleViewModel, studiesViewModel, navigator)
+
+                    communityDestinations(container, prayerViewModel, birthdaysViewModel, navigator)
 
                     legacyDestinations(appViewModel, navigator)
                 }
