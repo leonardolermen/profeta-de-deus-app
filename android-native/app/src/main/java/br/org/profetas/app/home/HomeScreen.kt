@@ -44,6 +44,8 @@ import br.org.profetas.app.support.ui.LoadFailure
 import br.org.profetas.app.support.ui.PrimaryButton
 import br.org.profetas.app.support.ui.QuickAction
 import br.org.profetas.app.support.ui.SectionCard
+import br.org.profetas.app.support.ui.SectionTitle
+import br.org.profetas.app.support.ui.SectionUnderline
 import java.time.Year
 
 private const val UPCOMING_LIMIT = 5
@@ -75,13 +77,24 @@ fun HomeScreen(
 
         QuickActions(onNavigate)
 
-        SectionCard(title = "Quem somos", modifier = sectionCardModifier) {
+        SectionCard(modifier = sectionCardModifier) {
+            SectionTitle("Quem somos")
+            SectionUnderline()
+
             Paragraph(
                 text = churchState.church.history.ifBlank { "A história da comunidade ainda não foi publicada." },
                 maxLines = 7,
             )
 
             OutlinedAction(label = "Saiba mais sobre nós", onClick = { onNavigate(Route.History) })
+        }
+
+        churchState.failure?.let { failure ->
+            LoadFailure(
+                message = failure,
+                onRetry = churchViewModel::reload,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
+            )
         }
 
         UpcomingHeader(onSeeAll = { onNavigate(Route.Events) })
@@ -217,7 +230,8 @@ private fun Paragraph(text: String, maxLines: Int = Int.MAX_VALUE) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         maxLines = maxLines,
         overflow = TextOverflow.Ellipsis,
-        modifier = Modifier.padding(top = 10.dp),
+        // marginBottom 10 do cabeçalho + marginTop 8 do texto no Expo.
+        modifier = Modifier.padding(top = 18.dp),
     )
 }
 
@@ -268,7 +282,9 @@ private fun UpcomingHeader(onSeeAll: () -> Unit) {
 private fun WhereToFindUs(address: String) {
     val context = LocalContext.current
 
-    SectionCard(title = "Onde nos encontrar", modifier = sectionCardModifier) {
+    SectionCard(modifier = sectionCardModifier) {
+        SectionTitle("Onde nos encontrar")
+
         Paragraph(text = address.ifBlank { "O endereço da igreja ainda não foi publicado." })
 
         if (address.isNotBlank()) {

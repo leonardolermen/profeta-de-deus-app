@@ -1,14 +1,13 @@
 package br.org.profetas.app.navigation
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,9 +26,10 @@ import br.org.profetas.app.event.EventsViewModel
 import br.org.profetas.app.home.HomeScreen
 import br.org.profetas.app.theme.ProfetasTheme
 
-// O que a barra superior precisa da tela visível: o que o botão de atualizar recarrega e se há carga em curso.
+// O que o puxar-para-atualizar precisa da tela visível: o que recarregar e se há carga em curso.
 private class VisibleScreen(val reload: () -> Unit, val isBusy: Boolean)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: String?) {
     val appViewModel: AppViewModel = viewModel()
@@ -83,7 +83,9 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
     ProfetasTheme(isDark = appState.dark) {
         Scaffold(
             topBar = {
-                TopBar(visible = visible, onBack = navigator::back, onRefresh = screen.reload)
+                if (visible !in Route.tabs) {
+                    TopBar(visible = visible, onBack = navigator::back)
+                }
             },
             bottomBar = {
                 if (visible in Route.tabs) {
@@ -94,20 +96,20 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
                 SnackbarHost(snackbarHost)
             },
         ) { padding ->
-            Column(
+            // Sem barra superior nas abas, o padding do Scaffold já traz o recuo da barra de status. O NavHost fica
+            // sempre dentro do PullToRefreshBox: trocar o pai entre aba e tela empilhada recriaria a navegação.
+            PullToRefreshBox(
+                isRefreshing = screen.isBusy,
+                onRefresh = screen.reload,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
                     .imePadding(),
             ) {
-                if (screen.isBusy) {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                }
-
                 NavHost(
                     navController = navController,
                     startDestination = Route.Home.pattern,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                 ) {
                     composable(Route.Home.pattern) {
                         HomeScreen(
