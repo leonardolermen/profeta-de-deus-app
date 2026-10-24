@@ -25,7 +25,7 @@ import br.org.profetas.app.*
     if(register && !recover) Text("Use pelo menos 8 caracteres. Consulte a política de privacidade nos ajustes.",style=MaterialTheme.typography.bodySmall)
     val valid=Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches() && (recover || (password.length >= (if(register) 8 else 1) && (!register || name.trim().length>=2)))
     Button(enabled=valid && !s.saving,onClick={
-        if(recover) vm.action("Se houver uma conta com esse e-mail, você receberá as instruções de recuperação.") {resetPassword(email)}
+        if(recover) vm.action("Se houver uma conta com esse e-mail, você receberá as instruções de recuperação.") {account.requestRecovery(email)}
         else if(register) vm.register(name,email,password,done)
         else vm.login(email,password,done)
     }) {Text(if(recover) "Enviar instruções" else if(register) "Criar conta" else "Entrar")}
@@ -59,12 +59,12 @@ import br.org.profetas.app.*
     Heading("Meu perfil",s.email)
     var name by rememberSaveable(s.profile?.id,s.profile?.name) {mutableStateOf(s.profile?.name.orEmpty())}
     Field("Nome completo",name,{name=it.take(120)})
-    Button(enabled=!s.saving && name.trim().length>=2,onClick={vm.action("Perfil atualizado.") {saveProfile(name)}}) {Text("Salvar perfil")}
+    Button(enabled=!s.saving && name.trim().length>=2,onClick={vm.action("Perfil atualizado.") {account.saveName(name)}}) {Text("Salvar perfil")}
     HorizontalDivider()
     var password by remember {mutableStateOf("")}
     var confirm by remember {mutableStateOf("")}
     Heading("Alterar senha")
     OutlinedTextField(password,{password=it},label={Text("Nova senha")},visualTransformation=PasswordVisualTransformation(),singleLine=true,modifier=Modifier.fillMaxWidth())
     OutlinedTextField(confirm,{confirm=it},label={Text("Repita a nova senha")},visualTransformation=PasswordVisualTransformation(),singleLine=true,modifier=Modifier.fillMaxWidth())
-    Button(enabled=!s.saving && password.length>=8 && password==confirm,onClick={vm.action("Senha atualizada.",{password="";confirm=""}) {updatePassword(password)}}) {Text("Atualizar senha")}
+    Button(enabled=!s.saving && password.length>=8 && password==confirm,onClick={vm.action("Senha atualizada.",{password="";confirm=""}) {account.updatePassword(password)}}) {Text("Atualizar senha")}
 }

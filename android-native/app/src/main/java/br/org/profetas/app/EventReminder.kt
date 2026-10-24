@@ -12,7 +12,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.work.*
-import br.org.profetas.app.data.*
+import br.org.profetas.app.event.Event
 import br.org.profetas.app.event.displayDate
 import br.org.profetas.app.event.isFuture
 import br.org.profetas.app.event.reminder.reminderDelay
@@ -24,9 +24,9 @@ class EventReminder(context: Context, params: WorkerParameters) : CoroutineWorke
         val id = inputData.getString("id") ?: return Result.failure()
         val enabled = applicationContext.getSharedPreferences("preferences", 0).getStringSet("reminders", emptySet()).orEmpty()
         if (id !in enabled) return Result.success()
-        val repository = Repository(applicationContext)
+        val events = (applicationContext as ProfetasApplication).container.events
         // Revalida no servidor: nao notifica evento cancelado ou com data alterada.
-        val event = try { repository.events().find { it.id == id } } catch (_: Exception) { return if (runAttemptCount < 3) Result.retry() else Result.failure() }
+        val event = try { events.all().find { it.id == id } } catch (_: Exception) { return if (runAttemptCount < 3) Result.retry() else Result.failure() }
         if (event == null || event.date != inputData.getString("date") || !isFuture(event.date)) return Result.success()
         val manager = applicationContext.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(NotificationChannel("eventos", "Lembretes de eventos", NotificationManager.IMPORTANCE_DEFAULT))

@@ -21,7 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import br.org.profetas.app.*
 import br.org.profetas.app.R
-import br.org.profetas.app.data.*
+import br.org.profetas.app.event.Event
+import br.org.profetas.app.event.EventType
 import br.org.profetas.app.event.displayDate
 import br.org.profetas.app.event.isFuture
 import br.org.profetas.app.support.intent.openLink
@@ -54,7 +55,7 @@ import java.util.Locale
     Heading("Comunidade", "Caminhamos melhor juntos.")
     listOf("Pedidos de oração" to "prayer", "Estudos e trilhas" to "studies", "Aniversariantes" to "birthdays", "Galeria de fotos" to "gallery", "Minhas inscrições" to "registrations", "Nossa história" to "history", "Contatos e localização" to "contact").forEach { (title,path) -> Panel(title,onClick={go(path)}) }
 }
-@Composable fun EventCard(event: Event, click:()->Unit) = Panel(event.title, "${displayDate(event.date)} • ${event.type}", click)
+@Composable fun EventCard(event: Event, click:()->Unit) = Panel(event.title, "${displayDate(event.date)} • ${event.type.label}", click)
 @Composable fun EventsScreen(s:AppState,vm:AppViewModel,go:(String)->Unit) = Page {
     Heading("Agenda da comunidade")
     var query by rememberSaveable { mutableStateOf("") }
@@ -66,7 +67,7 @@ import java.util.Locale
     }
     Row { Checkbox(past,{past=it}); Text("Incluir eventos anteriores",Modifier.padding(top=12.dp)) }
     LoadStatus(s,"Eventos",vm::reload)
-    val filtered=s.events.filter { (past || isFuture(it.date)) && (type=="todos" || type==it.type) && "${it.title} ${it.description}".contains(query,true) }
+    val filtered=s.events.filter { (past || isFuture(it.date)) && (type=="todos" || type==it.type.databaseValue) && "${it.title} ${it.description}".contains(query,true) }
     if(filtered.isEmpty() && !s.loading) Empty("Nenhum evento encontrado.")
     filtered.forEach { EventCard(it) {go("event/${it.id}")} }
 }
@@ -93,12 +94,12 @@ import java.util.Locale
                 var name by rememberSaveable(s.profile?.id) {mutableStateOf(s.profile?.name.orEmpty())}
                 var phone by rememberSaveable {mutableStateOf("")}
                 var accepted by rememberSaveable {mutableStateOf(false)}
-                Heading(if(event.type=="batismo") "Quero me batizar" else "Participar deste evento")
+                Heading(if(event.type==EventType.BATISMO) "Quero me batizar" else "Participar deste evento")
                 Field("Nome completo",name,{name=it.take(120)})
                 Field("Telefone com DDD",phone,{phone=it.take(25)})
                 Row {Checkbox(accepted,{accepted=it}); Text("Autorizo o contato da igreja sobre esta inscrição.",Modifier.weight(1f).padding(top=10.dp))}
                 TextButton(onClick={go("privacy")}) {Text("Consultar privacidade")}
-                Button(enabled=!s.saving && name.trim().length>=2 && phone.count {it.isDigit()}>=8 && accepted,onClick={vm.action("Inscrição confirmada!") {enroll(id,name,phone)}}) {Text("Confirmar inscrição")}
+                Button(enabled=!s.saving && name.trim().length>=2 && phone.count {it.isDigit()}>=8 && accepted,onClick={vm.action("Inscrição confirmada!") {registrations.enroll(id,name,phone)}}) {Text("Confirmar inscrição")}
             }
         }
     } else Empty("Este evento já aconteceu.")
@@ -110,7 +111,7 @@ import java.util.Locale
     Field("Seu nome",name,{name=it.take(120)})
     Field("Pedido de oração",text,{text=it.take(4000)},true)
     Text("${text.length}/4000",style=MaterialTheme.typography.bodySmall)
-    Button(enabled=!s.saving && name.trim().length>=2 && text.trim().length>=5,onClick={vm.action("Pedido enviado à equipe pastoral.",done) {pray(name,text)}}) {Text("Enviar pedido")}
+    Button(enabled=!s.saving && name.trim().length>=2 && text.trim().length>=5,onClick={vm.action("Pedido enviado à equipe pastoral.",done) {prayers.send(name,text)}}) {Text("Enviar pedido")}
 }
 @Composable fun StudiesScreen(s:AppState,vm:AppViewModel,go:(String)->Unit) = Page {
     Heading("Estudos e trilhas", "Leia no seu ritmo e acompanhe suas conclusões neste aparelho.")
@@ -154,16 +155,17 @@ import java.util.Locale
     val photos=s.photos.filter {album=="Todos" || it.album==album}
     if(photos.isEmpty() && !s.loading) Empty("Nenhuma foto publicada neste álbum.")
     photos.forEach { photo -> Panel(photo.title,photo.album,{go("photo/${photo.id}")}) {
-        SubcomposeAsyncImage(model=photo.url,contentDescription=photo.title,modifier=Modifier.fillMaxWidth().height(200.dp),contentScale=ContentScale.Crop,loading={CircularProgressIndicator()},error={Empty("Imagem indisponível.")})
+        SubcomposeAsyncImage(model=photo.imageUrl(vm.storageBaseUrl),contentDescription=photo.title,modifier=Modifier.fillMaxWidth().height(200.dp),contentScale=ContentScale.Crop,loading={CircularProgressIndicator()},error={Empty("Imagem indisponível.")})
     } }
 }
-@Composable fun PhotoScreen(s:AppState,id:String) = Page {
+@Composable fun PhotoScreen(s:AppState,storageBaseUrl:String,id:String) = Page {
     val photo=s.photos.find {it.id==id}
     if(photo==null) {Empty("Foto indisponível."); return@Page}
     val context=LocalContext.current
+    val imageUrl=photo.imageUrl(storageBaseUrl).orEmpty()
     Heading(photo.title,photo.album)
-    SubcomposeAsyncImage(model=photo.url,contentDescription=photo.title,modifier=Modifier.fillMaxWidth().height(420.dp),contentScale=ContentScale.Fit,loading={CircularProgressIndicator()},error={Empty("Não foi possível carregar a imagem.")})
-    OutlinedButton(onClick={share(context,"${photo.title}\n${photo.url}")}) {Text("Compartilhar foto")}
+    SubcomposeAsyncImage(model=imageUrl,contentDescription=photo.title,modifier=Modifier.fillMaxWidth().height(420.dp),contentScale=ContentScale.Fit,loading={CircularProgressIndicator()},error={Empty("Não foi possível carregar a imagem.")})
+    OutlinedButton(onClick={share(context,"${photo.title}\n$imageUrl")}) {Text("Compartilhar foto")}
 }
 @Composable fun ContactScreen(s:AppState,vm:AppViewModel) = Page {
     val c=s.church
@@ -186,5 +188,5 @@ import java.util.Locale
     own.forEach { r -> Panel(s.events.find {it.id==r.eventId}?.title ?: "Evento",r.name,{go("event/${r.eventId}")}) {
         TextButton(onClick={cancelId=r.id},enabled=!s.saving) {Text("Cancelar inscrição")}
     } }
-    cancelId?.let { id -> AlertDialog(onDismissRequest={cancelId=null},title={Text("Cancelar inscrição?")},text={Text("Você poderá se inscrever novamente se o evento ainda estiver disponível.")},confirmButton={TextButton(onClick={cancelId=null; vm.action("Inscrição cancelada.") {removeRegistration(id)}}) {Text("Cancelar inscrição")}},dismissButton={TextButton(onClick={cancelId=null}) {Text("Manter")}}) }
+    cancelId?.let { id -> AlertDialog(onDismissRequest={cancelId=null},title={Text("Cancelar inscrição?")},text={Text("Você poderá se inscrever novamente se o evento ainda estiver disponível.")},confirmButton={TextButton(onClick={cancelId=null; vm.action("Inscrição cancelada.") {registrations.cancel(id)}}) {Text("Cancelar inscrição")}},dismissButton={TextButton(onClick={cancelId=null}) {Text("Manter")}}) }
 }

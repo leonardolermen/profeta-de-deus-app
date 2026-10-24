@@ -9,11 +9,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import br.org.profetas.app.*
-import br.org.profetas.app.data.*
+import br.org.profetas.app.birthday.BirthdayDraft
+import br.org.profetas.app.church.Church
+import br.org.profetas.app.event.EventDraft
+import br.org.profetas.app.event.EventType
+import br.org.profetas.app.gallery.PhotoDraft
+import br.org.profetas.app.study.StudyDraft
 import br.org.profetas.app.event.displayDate
 import br.org.profetas.app.event.eventInstant
 import br.org.profetas.app.support.http.isSecureUrl
-import org.json.JSONObject
 import java.time.LocalDateTime
 import java.time.MonthDay
 import java.time.ZoneId
@@ -52,9 +56,9 @@ import java.time.format.DateTimeFormatter
     val existing=id!="new"
     val initial=remember(table,id) {
         when(table) {
-            "eventos" -> s.events.find {it.id==id}?.let {e->mapOf("titulo" to e.title,"descricao" to e.description,"tipo" to e.type,"data" to (eventInstant(e.date)?.atZone(ZoneId.systemDefault())?.toLocalDateTime()?.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) ?: ""))}
+            "eventos" -> s.events.find {it.id==id}?.let {e->mapOf("titulo" to e.title,"descricao" to e.description,"tipo" to e.type.databaseValue,"data" to (eventInstant(e.date)?.atZone(ZoneId.systemDefault())?.toLocalDateTime()?.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) ?: ""))}
             "estudos" -> s.studies.find {it.id==id}?.let {mapOf("titulo" to it.title,"descricao" to it.description,"categoria" to it.category,"conteudo" to it.content)}
-            "fotos" -> s.photos.find {it.id==id}?.let {mapOf("titulo" to it.title,"url" to it.url,"album" to it.album)}
+            "fotos" -> s.photos.find {it.id==id}?.let {mapOf("titulo" to it.title,"url" to it.url.orEmpty(),"album" to it.album)}
             "aniversariantes" -> s.birthdays.find {it.id==id}?.let {mapOf("nome" to it.name,"dia" to "${it.day}","mes" to "${it.month}","consentimento" to "${it.consent}")}
             "igreja" -> s.church.let {mapOf("nome" to it.name,"telefone" to it.phone,"whatsapp" to it.whatsapp,"email" to it.email,"endereco" to it.address,"historia" to it.history,"privacidade" to it.privacy)}
             else -> null
@@ -84,30 +88,55 @@ import java.time.format.DateTimeFormatter
     validation?.let {Text(it,color=MaterialTheme.colorScheme.error)}
     Button(enabled=!s.saving && fields.isNotEmpty(),onClick={
         try {
-            val body=JSONObject()
-            fields.forEach {(key,_)->if(key!="data") body.put(key,value(key).trim())}
+            fun trimmed(key:String)=value(key).trim()
             val title=value(if(table in listOf("aniversariantes","igreja")) "nome" else "titulo").trim()
             require(title.length in 2..if(table in listOf("aniversariantes","igreja")) 120 else 160) {"Informe um nome ou título entre 2 e 120/160 caracteres."}
+            val saveId=if(existing) id else null
             when(table) {
                 "eventos" -> {
                     val local=LocalDateTime.parse(value("data").trim(),DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm").withResolverStyle(java.time.format.ResolverStyle.STRICT))
-                    body.put("data_evento",local.atZone(ZoneId.systemDefault()).toOffsetDateTime().toString())
-                    body.put("tipo",value("tipo").ifBlank {"culto"})
+                    val draft=EventDraft(
+                        title=trimmed("titulo"),
+                        description=trimmed("descricao"),
+                        date=local.atZone(ZoneId.systemDefault()).toOffsetDateTime().toString(),
+                        type=EventType.fromDatabase(value("tipo").ifBlank {"culto"}),
+                        // Mantém a foto já enviada: o editor ainda não troca a imagem do evento.
+                        imagePath=s.events.find {it.id==id}?.imagePath,
+                    )
+                    vm.action("Cadastro salvo.",done) {events.save(saveId,draft)}
                 }
-                "estudos" -> require(value("conteudo").trim().length>=5) {"Escreva o conteúdo do estudo."}
-                "fotos" -> require(isSecureUrl(value("url").trim())) {"Informe uma URL HTTPS válida."}
+                "estudos" -> {
+                    require(value("conteudo").trim().length>=5) {"Escreva o conteúdo do estudo."}
+                    val draft=StudyDraft(title=trimmed("titulo"),description=trimmed("descricao"),category=trimmed("categoria"),content=trimmed("conteudo"))
+                    vm.action("Cadastro salvo.",done) {studies.save(saveId,draft)}
+                }
+                "fotos" -> {
+                    require(isSecureUrl(value("url").trim())) {"Informe uma URL HTTPS válida."}
+                    val draft=PhotoDraft(title=trimmed("titulo"),url=trimmed("url"),album=trimmed("album"))
+                    vm.action("Cadastro salvo.",done) {gallery.save(saveId,draft)}
+                }
                 "aniversariantes" -> {
                     val day=value("dia").toIntOrNull() ?: error("Informe o dia.")
                     val month=value("mes").toIntOrNull() ?: error("Informe o mês.")
                     MonthDay.of(month,day)
-                    body.put("dia",day).put("mes",month).put("consentimento",value("consentimento")=="true")
+                    val draft=BirthdayDraft(name=trimmed("nome"),day=day,month=month,consent=value("consentimento")=="true")
+                    vm.action("Cadastro salvo.",done) {birthdays.save(saveId,draft)}
                 }
                 "igreja" -> {
                     require(value("email").isBlank() || android.util.Patterns.EMAIL_ADDRESS.matcher(value("email").trim()).matches()) {"Informe um e-mail válido."}
                     require(value("whatsapp").isBlank() || value("whatsapp").count {it.isDigit()} in 10..15) {"Informe o WhatsApp com país e DDD."}
+                    val details=Church(
+                        name=trimmed("nome"),
+                        phone=trimmed("telefone"),
+                        whatsapp=trimmed("whatsapp"),
+                        email=trimmed("email"),
+                        address=trimmed("endereco"),
+                        history=trimmed("historia"),
+                        privacy=trimmed("privacidade"),
+                    )
+                    vm.action("Cadastro salvo.",done) {church.save(details)}
                 }
             }
-            vm.save(table,if(existing) id else null,body,done)
         } catch(e:Exception) {validation=e.message ?: "Confira os campos do formulário."}
     }) {Text("Salvar cadastro")}
 }

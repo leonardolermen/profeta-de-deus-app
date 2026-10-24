@@ -24,7 +24,7 @@ import br.org.profetas.app.theme.ProfetasTheme
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(state.message) { state.message?.let { snackbar.showSnackbar(it); vm.dismissMessage() } }
     LaunchedEffect(initialEvent) { initialEvent?.let { nav.navigate("event/$it") } }
-    LaunchedEffect(recovery) { recovery?.let { link -> vm.action("Defina sua nova senha no perfil.", {nav.navigate("profile")}) {acceptRecovery(link)} } }
+    LaunchedEffect(recovery) { recovery?.let { link -> vm.action("Defina sua nova senha no perfil.", {nav.navigate("profile")}) {account.acceptRecovery(link)} } }
     val roots = listOf("home", "bible", "events", "community", "settings")
     fun go(path: String) { nav.navigate(path) { launchSingleTop=true } }
     ProfetasTheme(isDark=state.dark) {
@@ -52,7 +52,7 @@ import br.org.profetas.app.theme.ProfetasTheme
                     composable("study/{id}",arguments=listOf(navArgument("id"){type=NavType.StringType})) { StudyScreen(state,vm,it.arguments?.getString("id").orEmpty()) }
                     composable("birthdays") { BirthdaysScreen(state,vm,::go) }
                     composable("gallery") { GalleryScreen(state,vm,::go) }
-                    composable("photo/{id}",arguments=listOf(navArgument("id"){type=NavType.StringType})) { PhotoScreen(state,it.arguments?.getString("id").orEmpty()) }
+                    composable("photo/{id}",arguments=listOf(navArgument("id"){type=NavType.StringType})) { PhotoScreen(state,vm.storageBaseUrl,it.arguments?.getString("id").orEmpty()) }
                     composable("contact") { ContactScreen(state,vm) }
                     composable("history") { Page { Heading("Nossa história"); LoadStatus(state,"Igreja",vm::reload); if(state.church.history.isBlank()) Empty("A história da comunidade ainda não foi publicada.") else Text(state.church.history) } }
                     composable("privacy") { Page { Heading("Privacidade"); LoadStatus(state,"Igreja",vm::reload); Text(state.church.privacy.ifBlank { "A política de privacidade ainda não foi publicada pela igreja. Entre em contato com a secretaria para informações sobre o tratamento dos seus dados." }) } }
