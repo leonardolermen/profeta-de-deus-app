@@ -15,6 +15,9 @@ object Palette {
     val OnPhoto = Color(0xFFFFFFFF)
     val DayBadge = Color(0xFFEBF4FA)
 
+    // Verde da marca do WhatsApp: igual nos dois temas, para o cartão ser reconhecido de imediato.
+    val WhatsApp = Color(0xFF25D366)
+
     // Escuras: o texto claro vira o fundo escuro e a superfície clara vira o texto escuro — mesma
     // paleta, papéis invertidos — mantendo Primary/Accent reconhecíveis (mais claros para contraste).
     val DarkPrimary = Color(0xFF4C9FFF)

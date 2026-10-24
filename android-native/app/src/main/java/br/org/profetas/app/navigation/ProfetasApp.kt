@@ -113,6 +113,8 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
         Route.Birthdays -> VisibleScreen(reload = birthdaysViewModel::reload, isBusy = birthdaysState.loading)
         Route.Gallery, is Route.Photo ->
             VisibleScreen(reload = galleryViewModel::reload, isBusy = galleryState.loading)
+        Route.History, Route.Contact, Route.Privacy ->
+            VisibleScreen(reload = churchViewModel::reload, isBusy = churchState.loading)
         else -> VisibleScreen(reload = appViewModel::reload, isBusy = appState.loading || appState.saving)
     }
 
@@ -172,6 +174,8 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
                     communityDestinations(container, prayerViewModel, birthdaysViewModel, navigator)
 
                     galleryDestinations(container, galleryViewModel, navigator)
+
+                    churchDestinations(churchViewModel)
 
                     legacyDestinations(appViewModel, navigator)
                 }
