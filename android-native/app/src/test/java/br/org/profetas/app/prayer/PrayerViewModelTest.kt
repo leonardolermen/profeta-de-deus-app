@@ -94,4 +94,23 @@ class PrayerViewModelTest {
         assertEquals("Pedido enviado à equipe pastoral.", message.await())
         assertEquals(1, prayerPosts.get())
     }
+
+    // O PrayerViewModel é criado uma vez em ProfetasApp e sobrevive à navegação: um envio bem-sucedido não pode
+    // deixar a tela presa, nem impedir um segundo pedido na mesma visita ou numa visita seguinte.
+    @Test fun canSendAgainAfterSuccess() = runTest {
+        val viewModel = viewModel(backgroundScope)
+
+        val firstSent = async(start = CoroutineStart.UNDISPATCHED) { viewModel.sent.first() }
+        viewModel.send("Maria Aparecida", "Por favor, orem pela minha família nesse momento difícil.")
+        firstSent.await()
+
+        assertEquals(false, viewModel.state.value.sending)
+
+        val secondSent = async(start = CoroutineStart.UNDISPATCHED) { viewModel.sent.first() }
+        viewModel.send("Carlos Eduardo", "Oremos também pela saúde do meu pai, que está internado agora.")
+        secondSent.await()
+
+        assertEquals(false, viewModel.state.value.sending)
+        assertEquals(2, prayerPosts.get())
+    }
 }

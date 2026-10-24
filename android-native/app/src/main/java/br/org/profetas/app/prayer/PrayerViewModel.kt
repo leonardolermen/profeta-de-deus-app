@@ -9,8 +9,12 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import br.org.profetas.app.ProfetasApplication
 import br.org.profetas.app.support.message.UserMessages
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -21,13 +25,20 @@ const val MAX_NAME_LENGTH = 120
 const val MIN_TEXT_LENGTH = 5
 const val MAX_TEXT_LENGTH = 4000
 
-data class PrayerState(val sending: Boolean = false, val sent: Boolean = false)
+data class PrayerState(val sending: Boolean = false)
 
 class PrayerViewModel(private val prayers: PrayerRepository, private val messages: UserMessages) : ViewModel() {
 
     private val mutableState = MutableStateFlow(PrayerState())
 
     val state: StateFlow<PrayerState> = mutableState.asStateFlow()
+
+    // Evento de disparo único: o PrayerViewModel é criado uma vez em ProfetasApp e sobrevive à navegação, então um
+    // campo "sent" no state ficaria preso em true e mandaria de volta sozinho em toda visita seguinte à tela. Um
+    // SharedFlow sem replay só alcança quem já está coletando no momento do envio (a tela aberta agora).
+    private val sentEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+    val sent: SharedFlow<Unit> = sentEvents.asSharedFlow()
 
     // Mesmas regras da tela Kotlin anterior: sem equivalente no Expo, que só checava campo vazio.
     fun send(name: String, text: String) {
@@ -53,13 +64,14 @@ class PrayerViewModel(private val prayers: PrayerRepository, private val message
                 prayers.send(trimmedName, trimmedText)
 
                 messages.show("Pedido enviado à equipe pastoral.")
-                mutableState.update { current -> current.copy(sending = false, sent = true) }
+                sentEvents.tryEmit(Unit)
             } catch (e: Exception) {
                 if (e is CancellationException) {
                     throw e
                 }
 
                 messages.show(e.message ?: "Não foi possível enviar seu pedido. Tente novamente.")
+            } finally {
                 mutableState.update { current -> current.copy(sending = false) }
             }
         }

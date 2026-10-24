@@ -45,9 +45,11 @@ fun PrayerScreen(viewModel: PrayerViewModel, onBack: () -> Unit) {
     var text by rememberSaveable { mutableStateOf("") }
 
     // O Expo fecha a tela com um Alerta ao confirmar; aqui a mensagem já sai pelo snackbar, então o pedido
-    // enviado com sucesso volta sozinho para quem chamou a tela (o atalho "Oração" da Início).
-    LaunchedEffect(state.sent) {
-        if (state.sent) {
+    // enviado com sucesso volta sozinho para quem chamou a tela (o atalho "Oração" da Início). `sent` é um
+    // evento de disparo único (não um campo do state): assim uma nova visita à tela, depois de um envio
+    // anterior bem-sucedido, não é mandada de volta sozinha de novo.
+    LaunchedEffect(viewModel) {
+        viewModel.sent.collect {
             onBack()
         }
     }
