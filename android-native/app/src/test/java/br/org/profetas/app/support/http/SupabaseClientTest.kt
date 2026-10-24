@@ -147,6 +147,45 @@ class SupabaseClientTest {
         assertEquals(bytes.toList(), request.body.readByteArray().toList())
     }
 
+    @Test fun uploadRefreshesOn401AndRetries() = runTest {
+        val storage = InMemorySessionStorage(Session("A", "R", "u", "e"))
+        val client = SupabaseClient(config(), storage, http)
+        val bytes = byteArrayOf(1, 2, 3, 4)
+        server.enqueue(MockResponse().setResponseCode(401))
+        server.enqueue(
+            MockResponse().setBody(
+                """{"access_token":"B","refresh_token":"R2","user":{"id":"u","email":"e"}}""",
+            ),
+        )
+        server.enqueue(MockResponse().setBody("{}"))
+
+        client.upload("/storage/v1/object/eventos/a.jpg", bytes, "image/jpeg")
+
+        server.takeRequest()
+        server.takeRequest()
+        val retry = server.takeRequest()
+        assertEquals("Bearer B", retry.getHeader("Authorization"))
+        assertEquals(bytes.toList(), retry.body.readByteArray().toList())
+    }
+
+    @Test fun uploadFailedRefreshDropsSession() = runTest {
+        val storage = InMemorySessionStorage(Session("A", "R", "u", "e"))
+        val client = SupabaseClient(config(), storage, http)
+        val bytes = byteArrayOf(1, 2, 3, 4)
+        server.enqueue(MockResponse().setResponseCode(401))
+        server.enqueue(MockResponse().setResponseCode(400))
+
+        try {
+            client.upload("/storage/v1/object/eventos/a.jpg", bytes, "image/jpeg")
+            fail("deveria lançar ApiException")
+        } catch (error: ApiException) {
+            assertEquals(400, error.status)
+        }
+
+        assertNull(client.session)
+        assertTrue(storage.cleared)
+    }
+
     @Test fun refusesWhenNotConfigured() = runTest {
         val storage = InMemorySessionStorage(null)
         val client = SupabaseClient(SupabaseConfig("http://" + server.hostName, "anon-key"), storage, http)

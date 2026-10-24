@@ -45,8 +45,8 @@ class SupabaseClient(
     suspend fun upload(path: String, bytes: ByteArray, contentType: String): String {
         check(isConfigured) { NOT_CONFIGURED_MESSAGE }
 
-        val token = session?.access ?: config.anonKey
-        return sendBytes(config.url.trimEnd('/') + path, bytes, contentType, token)
+        val url = config.url.trimEnd('/') + path
+        return withSingleRefreshRetry { token -> sendBytes(url, bytes, contentType, token) }
     }
 
     suspend fun anonymousPost(path: String, body: JSONObject): String =
@@ -83,18 +83,24 @@ class SupabaseClient(
     private suspend fun authenticated(path: String, method: String, body: JSONObject? = null): String {
         check(isConfigured) { NOT_CONFIGURED_MESSAGE }
 
-        val previousAccess = session?.access
         val url = config.url.trimEnd('/') + path
+        return withSingleRefreshRetry { token -> send(url, method, body, token) }
+    }
+
+    // Toda chamada autenticada (REST, PATCH de perfil, upload de foto) renova a sessao uma unica vez
+    // quando o servidor responde 401, e repete a mesma chamada com o token novo.
+    private suspend fun withSingleRefreshRetry(call: suspend (token: String) -> String): String {
+        val previousAccess = session?.access
 
         try {
-            return send(url, method, body, previousAccess ?: config.anonKey)
+            return call(previousAccess ?: config.anonKey)
         } catch (error: ApiException) {
             if (error.status != 401 || session == null) {
                 throw error
             }
 
             refreshCurrentSession(previousAccess)
-            return send(url, method, body, session?.access ?: config.anonKey)
+            return call(session?.access ?: config.anonKey)
         }
     }
 

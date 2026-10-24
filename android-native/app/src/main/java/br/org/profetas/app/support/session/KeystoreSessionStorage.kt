@@ -61,8 +61,13 @@ class KeystoreSessionStorage(context: Context) : SessionStorage {
             init(Cipher.DECRYPT_MODE, key(), GCMParameterSpec(128, iv))
         }
         val decoded = String(cipher.doFinal(Base64.decode(data, Base64.NO_WRAP)), Charsets.UTF_8)
-        val user = JSONObject(decoded)
-        Session(user.getString("access"), user.getString("refresh"), user.getString("id"), user.getString("email"))
+        val storedSession = JSONObject(decoded)
+        Session(
+            storedSession.getString("access"),
+            storedSession.getString("refresh"),
+            storedSession.getString("id"),
+            storedSession.getString("email"),
+        )
     }.getOrElse {
         preferences.edit().clear().apply()
         null
