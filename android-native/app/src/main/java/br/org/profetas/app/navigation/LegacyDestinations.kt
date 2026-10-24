@@ -9,9 +9,7 @@ import androidx.navigation.compose.composable
 import br.org.profetas.app.AppState
 import br.org.profetas.app.AppViewModel
 import br.org.profetas.app.ui.AdminScreen
-import br.org.profetas.app.ui.AuthScreen
 import br.org.profetas.app.ui.EditorScreen
-import br.org.profetas.app.ui.ProfileScreen
 import br.org.profetas.app.ui.SettingsScreen
 
 // Telas ainda não convertidas: continuam nos composables antigos de ui/ com o AppViewModel. Cada task de tela
@@ -21,13 +19,7 @@ fun NavGraphBuilder.legacyDestinations(appViewModel: AppViewModel, navigator: Na
     val back = navigator::back
 
     legacy(Route.Settings, appViewModel) { state -> SettingsScreen(state, appViewModel, goPath) }
-    legacy(Route.Profile, appViewModel) { state -> ProfileScreen(state, appViewModel) }
     legacy(Route.Admin, appViewModel) { state -> AdminScreen(state, appViewModel, goPath) }
-
-    // A tela antiga de conta faz entrar, cadastrar e recuperar numa só; as três rotas abrem ela até a Task 14.
-    listOf(Route.Login, Route.Register, Route.Recovery).forEach { route ->
-        legacy(route, appViewModel) { state -> AuthScreen(state, appViewModel, back) }
-    }
 
     legacy(Route.Editor.PATTERN, appViewModel) { state, entry ->
         EditorScreen(state, appViewModel, entry.argument("section"), entry.argument("id"), back)

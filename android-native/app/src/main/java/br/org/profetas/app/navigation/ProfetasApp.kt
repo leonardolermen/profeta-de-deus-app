@@ -21,6 +21,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import br.org.profetas.app.AppContainer
 import br.org.profetas.app.AppViewModel
+import br.org.profetas.app.account.AccountEvent
+import br.org.profetas.app.account.AccountViewModel
 import br.org.profetas.app.bible.BibleViewModel
 import br.org.profetas.app.birthday.BirthdaysViewModel
 import br.org.profetas.app.church.ChurchViewModel
@@ -43,6 +45,7 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
     val churchViewModel: ChurchViewModel = viewModel(factory = ChurchViewModel.Factory)
     val bibleViewModel: BibleViewModel = viewModel(factory = BibleViewModel.Factory)
     val studiesViewModel: StudiesViewModel = viewModel(factory = StudiesViewModel.Factory)
+    val accountViewModel: AccountViewModel = viewModel(factory = AccountViewModel.Factory)
     val prayerViewModel: PrayerViewModel = viewModel(factory = PrayerViewModel.Factory)
     val birthdaysViewModel: BirthdaysViewModel = viewModel(factory = BirthdaysViewModel.Factory)
     val galleryViewModel: GalleryViewModel = viewModel(factory = GalleryViewModel.Factory)
@@ -55,6 +58,7 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
     val birthdaysState by birthdaysViewModel.state.collectAsStateWithLifecycle()
     val galleryState by galleryViewModel.state.collectAsStateWithLifecycle()
     val profile by container.account.currentProfile.collectAsStateWithLifecycle()
+    val isLoggedIn by container.account.isLoggedIn.collectAsStateWithLifecycle()
 
     val navController = rememberNavController()
     val navigator = remember(navController) { Navigator(navController) }
@@ -82,12 +86,24 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
         initialRoute?.takeIf { route -> route != Route.Home }?.let(navigator::go)
     }
 
-    LaunchedEffect(recoveryLink) {
-        recoveryLink?.let { link ->
-            appViewModel.action("Defina sua nova senha no perfil.", { navigator.go(Route.Profile) }) {
-                account.acceptRecovery(link)
+    LaunchedEffect(Unit) {
+        accountViewModel.events.collect { event ->
+            if (event == AccountEvent.RECOVERY_ACCEPTED) {
+                navigator.go(Route.Profile)
             }
         }
+    }
+
+    LaunchedEffect(recoveryLink) {
+        recoveryLink?.let(accountViewModel::acceptRecovery)
+    }
+
+    // Os Ajustes e a Administração ainda leem a conta do AppViewModel (até as Tasks 15 e 17): entrar, sair ou
+    // trocar o nome precisa recarregá-lo. O nome entra na chave porque reload() refaz o perfil sem mudá-lo, então
+    // não gira em laço.
+    val accountName = profile?.name
+    LaunchedEffect(isLoggedIn, accountName) {
+        appViewModel.reload()
     }
 
     val screen = when (visible) {
@@ -113,6 +129,7 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
         Route.Birthdays -> VisibleScreen(reload = birthdaysViewModel::reload, isBusy = birthdaysState.loading)
         Route.Gallery, is Route.Photo ->
             VisibleScreen(reload = galleryViewModel::reload, isBusy = galleryState.loading)
+        Route.Profile -> VisibleScreen(reload = accountViewModel::loadProfile, isBusy = false)
         Route.History, Route.Contact, Route.Privacy ->
             VisibleScreen(reload = churchViewModel::reload, isBusy = churchState.loading)
         else -> VisibleScreen(reload = appViewModel::reload, isBusy = appState.loading || appState.saving)
@@ -176,6 +193,8 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
                     galleryDestinations(container, galleryViewModel, navigator)
 
                     churchDestinations(churchViewModel)
+
+                    accountDestinations(accountViewModel, navigator)
 
                     legacyDestinations(appViewModel, navigator)
                 }

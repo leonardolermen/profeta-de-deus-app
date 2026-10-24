@@ -19,6 +19,15 @@ class Navigator(private val navController: NavController) {
         navController.popBackStack()
     }
 
+    // Entrou: sai do login junto com o cadastro que talvez esteja por cima, em vez de devolver a quem acabou de
+    // entrar a tela de login. Aberto direto pelo link (sem login na pilha), basta fechar a tela atual.
+    fun finishSignIn() {
+        val leftLogin = navController.popBackStack(Route.Login.path, inclusive = true)
+        if (!leftLogin) {
+            navController.popBackStack()
+        }
+    }
+
     // As telas antigas de ui/ ainda navegam por string; "auth" era a tela única de conta, hoje Route.Login.
     fun goLegacyPath(path: String) {
         val route = if (path == "auth") Route.Login else Route.fromPath(path)
