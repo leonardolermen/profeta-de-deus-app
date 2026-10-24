@@ -33,28 +33,6 @@ import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
 
-@Composable fun HomeScreen(s: AppState, configured: Boolean, go: (String)->Unit) = Page {
-    Image(painterResource(R.drawable.logo),contentDescription="Igreja Profetas de Deus",modifier=Modifier.fillMaxWidth().height(110.dp),contentScale=ContentScale.Fit)
-    Heading("Uma comunidade de fé", "Que bom ter você aqui${s.profile?.name?.let { ", $it" } ?: ""}.")
-    if(!configured) Panel("Sua comunidade estará aqui", "As informações estarão disponíveis após a conexão dos serviços da igreja.")
-    Panel("Juntos em oração", "Compartilhe seu pedido com a equipe pastoral.", { go("prayer") })
-    Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onClick={go("bible")}) { Text("Ler a Bíblia") }
-        OutlinedButton(onClick={go("studies")}) { Text("Estudos") }
-    }
-    Heading("Próximos encontros")
-    s.errors["Eventos"]?.let { Empty(it) }
-    val events = s.events.filter { isFuture(it.date) }.take(3)
-    if(events.isEmpty() && !s.loading) Empty("Nenhum encontro publicado para os próximos dias.")
-    events.forEach { EventCard(it) { go("event/${it.id}") } }
-    TextButton(onClick={go("events")}) { Text("Ver agenda completa") }
-    Panel("Conheça nossa história", "Nossa missão e caminhada.", {go("history")})
-    Panel("Fale com a igreja", "Contatos e localização.", {go("contact")})
-}
-@Composable fun CommunityScreen(go:(String)->Unit) = Page {
-    Heading("Comunidade", "Caminhamos melhor juntos.")
-    listOf("Pedidos de oração" to "prayer", "Estudos e trilhas" to "studies", "Aniversariantes" to "birthdays", "Galeria de fotos" to "gallery", "Minhas inscrições" to "registrations", "Nossa história" to "history", "Contatos e localização" to "contact").forEach { (title,path) -> Panel(title,onClick={go(path)}) }
-}
 @Composable fun EventCard(event: Event, click:()->Unit) = Panel(event.title, "${displayDate(event.date)} • ${event.type.label}", click)
 @Composable fun EventsScreen(s:AppState,vm:AppViewModel,go:(String)->Unit) = Page {
     Heading("Agenda da comunidade")

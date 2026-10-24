@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.org.profetas.app.theme.Palette
@@ -82,6 +83,7 @@ fun PhotoEventCard(
                 fontWeight = FontWeight.ExtraBold,
                 color = Palette.OnPhoto,
                 maxLines = 2,
+                modifier = Modifier.padding(bottom = 4.dp),
             )
 
             Text(
@@ -89,6 +91,8 @@ fun PhotoEventCard(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = Palette.OnPhoto.copy(alpha = 0.8f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 // Botão de ação principal (primaryBtn/primaryText de app/(tabs)/index.tsx). O texto usa a cor de
@@ -20,6 +21,7 @@ fun PrimaryButton(label: String, onClick: () -> Unit, modifier: Modifier = Modif
         text = label,
         fontWeight = FontWeight.ExtraBold,
         color = MaterialTheme.colorScheme.surface,
+        textAlign = TextAlign.Center,
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
             .background(MaterialTheme.colorScheme.primary)
