@@ -21,10 +21,6 @@ fun eventInstant(date: String): Instant? = runCatching { OffsetDateTime.parse(da
 fun displayDate(date: String): String = eventInstant(date)?.atZone(ZoneId.systemDefault())
     ?.format(DateTimeFormatter.ofPattern("dd MMM yyyy 'às' HH:mm", Locale.forLanguageTag("pt-BR"))) ?: date
 fun isFuture(date: String, now: Instant = Instant.now()): Boolean = eventInstant(date)?.isAfter(now) == true
-fun validHttps(value: String): Boolean = runCatching {
-    val uri = java.net.URI(value)
-    uri.scheme == "https" && !uri.host.isNullOrBlank() && uri.userInfo == null
-}.getOrDefault(false)
 fun reminderDelay(date: String, now: Instant = Instant.now()): Long? {
     val instant = eventInstant(date) ?: return null
     if (!instant.isAfter(now)) return null

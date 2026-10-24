@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import br.org.profetas.app.*
 import br.org.profetas.app.data.*
+import br.org.profetas.app.support.http.isSecureUrl
 import org.json.JSONObject
 import java.time.LocalDateTime
 import java.time.MonthDay
@@ -92,7 +93,7 @@ import java.time.format.DateTimeFormatter
                     body.put("tipo",value("tipo").ifBlank {"culto"})
                 }
                 "estudos" -> require(value("conteudo").trim().length>=5) {"Escreva o conteúdo do estudo."}
-                "fotos" -> require(validHttps(value("url").trim())) {"Informe uma URL HTTPS válida."}
+                "fotos" -> require(isSecureUrl(value("url").trim())) {"Informe uma URL HTTPS válida."}
                 "aniversariantes" -> {
                     val day=value("dia").toIntOrNull() ?: error("Informe o dia.")
                     val month=value("mes").toIntOrNull() ?: error("Informe o mês.")

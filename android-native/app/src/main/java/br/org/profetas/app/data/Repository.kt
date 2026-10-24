@@ -2,6 +2,7 @@ package br.org.profetas.app.data
 
 import android.content.Context
 import br.org.profetas.app.BuildConfig
+import br.org.profetas.app.support.http.isSecureUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
@@ -20,7 +21,7 @@ private fun JSONObject.text(key: String): String = if (isNull(key)) "" else optS
 class Repository(context: Context) {
     private val store = SessionStore(context)
     @Volatile var session: Session? = store.load(); private set
-    val configured get() = validHttps(BuildConfig.SUPABASE_URL) && BuildConfig.SUPABASE_ANON_KEY.isNotBlank()
+    val configured get() = isSecureUrl(BuildConfig.SUPABASE_URL) && BuildConfig.SUPABASE_ANON_KEY.isNotBlank()
     private val refreshLock = Mutex()
     private val http = OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(25, TimeUnit.SECONDS).build()
     private suspend fun send(url: String, method: String = "GET", body: JSONObject? = null, token: String? = null, supabase: Boolean = true): String = withContext(Dispatchers.IO) {

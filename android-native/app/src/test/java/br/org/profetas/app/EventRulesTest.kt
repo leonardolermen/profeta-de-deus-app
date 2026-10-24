@@ -20,11 +20,4 @@ class EventRulesTest {
         assertEquals(3_600_000L,reminderDelay("2026-10-21T11:00:00-03:00",now))
         assertEquals(0L,reminderDelay("2026-10-21T12:30:00Z",now))
     }
-    @Test fun photosRequireAnActualHttpsHost() {
-        assertTrue(validHttps("https://example.org/photo.jpg"))
-        assertFalse(validHttps("http://example.org/photo.jpg"))
-        assertFalse(validHttps("https:///photo.jpg"))
-        assertFalse(validHttps("javascript:alert(1)"))
-        assertFalse(validHttps("https://user:password@example.org/image.jpg"))
-    }
 }
