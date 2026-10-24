@@ -15,7 +15,6 @@ data class Registration(val id: String, val eventId: String, val name: String, v
 data class Book(val name: String, val abbrev: String, val chapters: Int)
 data class Verse(val number: Int, val text: String)
 data class Chapter(val book: String, val number: Int, val verses: List<Verse>)
-data class Session(val access: String, val refresh: String, val userId: String, val email: String)
 
 fun eventInstant(date: String): Instant? = runCatching { OffsetDateTime.parse(date).toInstant() }.getOrNull()
 fun displayDate(date: String): String = eventInstant(date)?.atZone(ZoneId.systemDefault())

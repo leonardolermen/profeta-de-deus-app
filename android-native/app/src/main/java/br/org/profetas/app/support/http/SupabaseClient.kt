@@ -1,0 +1,192 @@
+package br.org.profetas.app.support.http
+
+import br.org.profetas.app.support.session.Session
+import br.org.profetas.app.support.session.SessionStorage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+
+private const val NOT_CONFIGURED_MESSAGE = "O serviço da comunidade ainda não está disponível."
+
+/** Cliente HTTP para a API REST/Auth do Supabase, com renovação de sessão e mensagens de erro em pt-BR. */
+class SupabaseClient(
+    private val config: SupabaseConfig,
+    private val storage: SessionStorage,
+    private val http: OkHttpClient,
+) {
+
+    @Volatile
+    var session: Session? = storage.load()
+        private set
+
+    val isConfigured: Boolean get() = config.isUsable
+
+    private val refreshLock = Mutex()
+
+    suspend fun get(path: String): String = authenticated(path, "GET")
+
+    suspend fun post(path: String, body: JSONObject): String = authenticated(path, "POST", body)
+
+    suspend fun patch(path: String, body: JSONObject): String = authenticated(path, "PATCH", body)
+
+    // GoTrue (Supabase Auth) só aceita PUT para atualizar o usuário; não existe no padrão REST das outras tabelas.
+    suspend fun put(path: String, body: JSONObject): String = authenticated(path, "PUT", body)
+
+    suspend fun delete(path: String): String = authenticated(path, "DELETE")
+
+    suspend fun deleteWithBody(path: String, body: JSONObject): String = authenticated(path, "DELETE", body)
+
+    suspend fun upload(path: String, bytes: ByteArray, contentType: String): String {
+        check(isConfigured) { NOT_CONFIGURED_MESSAGE }
+
+        val token = session?.access ?: config.anonKey
+        return sendBytes(config.url.trimEnd('/') + path, bytes, contentType, token)
+    }
+
+    suspend fun anonymousPost(path: String, body: JSONObject): String =
+        send(config.url.trimEnd('/') + path, "POST", body, token = null)
+
+    // Recuperacao de senha chega com um access_token proprio do link, que ainda nao e a sessao guardada.
+    suspend fun fetchUser(accessToken: String): JSONObject =
+        JSONObject(send(config.url.trimEnd('/') + "/auth/v1/user", token = accessToken))
+
+    suspend fun external(url: String, token: String): String = send(url, token = token, supabaseAuth = false)
+
+    fun adoptSession(json: JSONObject) {
+        val user = json.getJSONObject("user")
+        adoptSession(
+            Session(
+                access = json.getString("access_token"),
+                refresh = json.getString("refresh_token"),
+                userId = user.getString("id"),
+                email = user.optString("email"),
+            ),
+        )
+    }
+
+    fun adoptSession(session: Session) {
+        this.session = session
+        storage.save(session)
+    }
+
+    fun dropSession() {
+        session = null
+        storage.clear()
+    }
+
+    private suspend fun authenticated(path: String, method: String, body: JSONObject? = null): String {
+        check(isConfigured) { NOT_CONFIGURED_MESSAGE }
+
+        val previousAccess = session?.access
+        val url = config.url.trimEnd('/') + path
+
+        try {
+            return send(url, method, body, previousAccess ?: config.anonKey)
+        } catch (error: ApiException) {
+            if (error.status != 401 || session == null) {
+                throw error
+            }
+
+            refreshCurrentSession(previousAccess)
+            return send(url, method, body, session?.access ?: config.anonKey)
+        }
+    }
+
+    private suspend fun refreshCurrentSession(previousAccess: String?) {
+        refreshLock.withLock {
+            if (session?.access != previousAccess) {
+                // Outra chamada concorrente ja renovou a sessao enquanto esperavamos o lock.
+                return
+            }
+
+            val refreshToken = requireNotNull(session).refresh
+            try {
+                val result = send(
+                    config.url.trimEnd('/') + "/auth/v1/token?grant_type=refresh_token",
+                    "POST",
+                    JSONObject().put("refresh_token", refreshToken),
+                )
+                adoptSession(JSONObject(result))
+            } catch (refreshError: ApiException) {
+                // 400/401/403 na renovacao: o token de renovacao e invalido, nao ha como recuperar a sessao.
+                if (refreshError.status in listOf(400, 401, 403)) {
+                    dropSession()
+                }
+                throw refreshError
+            }
+        }
+    }
+
+    private suspend fun send(
+        url: String,
+        method: String = "GET",
+        body: JSONObject? = null,
+        token: String? = null,
+        supabaseAuth: Boolean = true,
+    ): String = withContext(Dispatchers.IO) {
+        val builder = Request.Builder().url(url).header("Accept", "application/json")
+
+        if (supabaseAuth) {
+            builder.header("apikey", config.anonKey)
+        }
+        token?.takeIf { it.isNotBlank() }?.let { builder.header("Authorization", "Bearer $it") }
+
+        if (method != "GET") {
+            val requestBody = if (method == "DELETE" && body == null) {
+                null
+            } else {
+                (body ?: JSONObject()).toString().toRequestBody("application/json".toMediaType())
+            }
+            builder.method(method, requestBody)
+        }
+
+        execute(builder.build(), supabaseAuth)
+    }
+
+    private suspend fun sendBytes(url: String, bytes: ByteArray, contentType: String, token: String): String =
+        withContext(Dispatchers.IO) {
+            val request = Request.Builder().url(url)
+                .header("Accept", "application/json")
+                .header("apikey", config.anonKey)
+                .header("Authorization", "Bearer $token")
+                .header("x-upsert", "false")
+                .method("POST", bytes.toRequestBody(contentType.toMediaType()))
+                .build()
+
+            execute(request, supabaseAuth = true)
+        }
+
+    private fun execute(request: Request, supabaseAuth: Boolean): String {
+        http.newCall(request).execute().use { response ->
+            val text = response.body?.string().orEmpty()
+            if (!response.isSuccessful) {
+                throw ApiException(response.code, friendlyMessage(response.code, text, supabaseAuth))
+            }
+            return text
+        }
+    }
+
+    private fun friendlyMessage(status: Int, body: String, supabaseAuth: Boolean): String = when (status) {
+        401 -> "Sua sessão expirou. Entre novamente."
+        403 -> "Você não tem permissão para esta ação."
+        409 -> "Este cadastro já existe."
+        429 -> "Muitas tentativas. Aguarde e tente novamente."
+        else -> if (!supabaseAuth) {
+            "Não foi possível consultar a Bíblia ($status)."
+        } else {
+            runCatching {
+                val error = JSONObject(body)
+                error.optString(
+                    "msg",
+                    error.optString("error_description", error.optString("message", "Falha na solicitação.")),
+                )
+            }.getOrDefault("Falha na solicitação ($status).")
+        }
+    }
+}
