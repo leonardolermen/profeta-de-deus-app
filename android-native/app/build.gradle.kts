@@ -63,5 +63,7 @@ dependencies {
     // (isSecureUrl exige https, então o servidor de teste precisa falar https de verdade).
     testImplementation("com.squareup.okhttp3:okhttp-tls:4.12.0")
     testImplementation("org.json:json:20240303")
+    // android.net.Uri é só um stub na JVM; o mock dá um Uri para entregar ao ImageReader falso.
+    testImplementation("org.mockito:mockito-core:5.14.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
 }
