@@ -1,7 +1,6 @@
 package br.org.profetas.app.event
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -27,7 +26,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -134,32 +132,6 @@ private fun Header(onNavigate: (Route) -> Unit) {
             label = "Batismo",
             onClick = { onNavigate(Route.Baptism) },
             modifier = Modifier.weight(1f),
-        )
-    }
-}
-
-// actionBtn/actionBtnIcon/actionBtnText de app/(tabs)/eventos.tsx.
-@Composable
-private fun ActionButton(emoji: String, label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(12.dp)
-
-    Row(
-        modifier = modifier
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.outline, shape)
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(text = emoji, fontSize = 18.sp, modifier = Modifier.padding(end = 8.dp))
-
-        Text(
-            text = label,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = MaterialTheme.colorScheme.primary,
         )
     }
 }
