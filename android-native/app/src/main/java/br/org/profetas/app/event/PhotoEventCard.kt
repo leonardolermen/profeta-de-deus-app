@@ -22,8 +22,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.org.profetas.app.support.storage.StorageBucket
 import br.org.profetas.app.theme.Palette
 import coil.compose.AsyncImage
+import java.time.ZoneId
+
+// Cartão de um evento do banco: a data já vem válida (timestamptz), por isso o selo não tem caminho de erro.
+@Composable
+fun PhotoEventCard(event: Event, storageBaseUrl: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    PhotoEventCard(
+        title = event.title,
+        subtitle = subtitleOf(event),
+        ticket = ticketDate(requireNotNull(eventInstant(event.date)), ZoneId.systemDefault()),
+        image = imageOf(event, storageBaseUrl),
+        onClick = onClick,
+        modifier = modifier,
+    )
+}
 
 // Cartão de evento em destaque com foto de fundo (specialEventCard/eventImageBg/imageOverlay de
 // app/(tabs)/index.tsx). `image` aceita tanto um @DrawableRes (Int, imagem padrão do EventType)
@@ -97,3 +112,10 @@ fun PhotoEventCard(
         }
     }
 }
+
+// O Expo mostrava uma chamada curta sob o título; aqui ela é a primeira linha da descrição, ou o tipo do evento.
+private fun subtitleOf(event: Event): String =
+    event.description.lineSequence().firstOrNull { line -> line.isNotBlank() } ?: event.type.label
+
+private fun imageOf(event: Event, storageBaseUrl: String): Any =
+    event.imagePath?.let { path -> StorageBucket.EVENTS.publicUrl(storageBaseUrl, path) } ?: event.type.defaultImage

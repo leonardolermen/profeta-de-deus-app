@@ -14,11 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import br.org.profetas.app.event.Event
 import br.org.profetas.app.event.PhotoEventCard
-import br.org.profetas.app.event.eventInstant
-import br.org.profetas.app.event.ticketDate
-import br.org.profetas.app.support.storage.StorageBucket
 import br.org.profetas.app.support.ui.EmptyState
-import java.time.ZoneId
 
 // Cada cartão ocupa 85% da largura e fica centralizado, com o vizinho aparecendo na borda (carousel de
 // app/(tabs)/index.tsx).
@@ -56,10 +52,8 @@ fun UpcomingEventsCarousel(
         ) {
             items(events, key = { event -> event.id }) { event ->
                 PhotoEventCard(
-                    title = event.title,
-                    subtitle = subtitleOf(event),
-                    ticket = ticketDate(requireNotNull(eventInstant(event.date)), ZoneId.systemDefault()),
-                    image = imageOf(event, storageBaseUrl),
+                    event = event,
+                    storageBaseUrl = storageBaseUrl,
                     onClick = { onOpen(event) },
                     modifier = Modifier.width(cardWidth),
                 )
@@ -67,10 +61,3 @@ fun UpcomingEventsCarousel(
         }
     }
 }
-
-// O Expo mostrava uma chamada curta sob o título; aqui ela é a primeira linha da descrição, ou o tipo do evento.
-private fun subtitleOf(event: Event): String =
-    event.description.lineSequence().firstOrNull { line -> line.isNotBlank() } ?: event.type.label
-
-private fun imageOf(event: Event, storageBaseUrl: String): Any =
-    event.imagePath?.let { path -> StorageBucket.EVENTS.publicUrl(storageBaseUrl, path) } ?: event.type.defaultImage
