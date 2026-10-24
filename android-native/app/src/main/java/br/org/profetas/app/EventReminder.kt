@@ -13,6 +13,9 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.work.*
 import br.org.profetas.app.data.*
+import br.org.profetas.app.event.displayDate
+import br.org.profetas.app.event.isFuture
+import br.org.profetas.app.event.reminder.reminderDelay
 import java.util.concurrent.TimeUnit
 
 class EventReminder(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {

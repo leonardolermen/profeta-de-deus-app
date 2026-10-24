@@ -3,6 +3,8 @@ package br.org.profetas.app.data
 import android.content.Context
 import android.net.Uri
 import br.org.profetas.app.BuildConfig
+import br.org.profetas.app.account.ContentAccess
+import br.org.profetas.app.account.Profile
 import br.org.profetas.app.support.http.SupabaseClient
 import br.org.profetas.app.support.http.SupabaseConfig
 import br.org.profetas.app.support.session.KeystoreSessionStorage

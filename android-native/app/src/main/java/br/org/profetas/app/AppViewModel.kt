@@ -3,6 +3,8 @@ package br.org.profetas.app
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import br.org.profetas.app.account.ContentAccess
+import br.org.profetas.app.account.Profile
 import br.org.profetas.app.data.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow

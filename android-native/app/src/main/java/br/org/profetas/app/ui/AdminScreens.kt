@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import br.org.profetas.app.*
 import br.org.profetas.app.data.*
+import br.org.profetas.app.event.displayDate
+import br.org.profetas.app.event.eventInstant
 import br.org.profetas.app.support.http.isSecureUrl
 import org.json.JSONObject
 import java.time.LocalDateTime

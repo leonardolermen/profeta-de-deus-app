@@ -1,7 +1,5 @@
-package br.org.profetas.app
+package br.org.profetas.app.account
 
-import br.org.profetas.app.data.ContentAccess
-import br.org.profetas.app.data.Profile
 import org.junit.Assert.*
 import org.junit.Test
 
