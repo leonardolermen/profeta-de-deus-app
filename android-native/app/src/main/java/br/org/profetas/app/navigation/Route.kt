@@ -54,7 +54,7 @@ sealed interface Route {
 
     data object Studies : Route {
         override val path = "studies"
-        override val title = "Estudos"
+        override val title = "Estudos Bíblicos"
     }
 
     data class Study(val id: String) : Route {

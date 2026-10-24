@@ -11,7 +11,6 @@ import br.org.profetas.app.AppState
 import br.org.profetas.app.AppViewModel
 import br.org.profetas.app.ui.AdminScreen
 import br.org.profetas.app.ui.AuthScreen
-import br.org.profetas.app.ui.BibleScreen
 import br.org.profetas.app.ui.BirthdaysScreen
 import br.org.profetas.app.ui.ContactScreen
 import br.org.profetas.app.ui.EditorScreen
@@ -24,8 +23,6 @@ import br.org.profetas.app.ui.PhotoScreen
 import br.org.profetas.app.ui.PrayerScreen
 import br.org.profetas.app.ui.ProfileScreen
 import br.org.profetas.app.ui.SettingsScreen
-import br.org.profetas.app.ui.StudiesScreen
-import br.org.profetas.app.ui.StudyScreen
 
 // Telas ainda não convertidas: continuam nos composables antigos de ui/ com o AppViewModel. Cada task de tela
 // tira daqui o destino que ela converte.
@@ -33,11 +30,9 @@ fun NavGraphBuilder.legacyDestinations(appViewModel: AppViewModel, navigator: Na
     val goPath = navigator::goLegacyPath
     val back = navigator::back
 
-    legacy(Route.Bible, appViewModel) { state -> BibleScreen(state, appViewModel) }
     legacy(Route.Settings, appViewModel) { state -> SettingsScreen(state, appViewModel, goPath) }
     legacy(Route.Prayer, appViewModel) { state -> PrayerScreen(state, appViewModel, back) }
     legacy(Route.Birthdays, appViewModel) { state -> BirthdaysScreen(state, appViewModel, goPath) }
-    legacy(Route.Studies, appViewModel) { state -> StudiesScreen(state, appViewModel, goPath) }
     legacy(Route.Gallery, appViewModel) { state -> GalleryScreen(state, appViewModel, goPath) }
     legacy(Route.Contact, appViewModel) { state -> ContactScreen(state, appViewModel) }
     legacy(Route.Profile, appViewModel) { state -> ProfileScreen(state, appViewModel) }
@@ -50,9 +45,6 @@ fun NavGraphBuilder.legacyDestinations(appViewModel: AppViewModel, navigator: Na
         legacy(route, appViewModel) { state -> AuthScreen(state, appViewModel, back) }
     }
 
-    legacy(Route.Study.PATTERN, appViewModel) { state, entry ->
-        StudyScreen(state, appViewModel, entry.argument("id"))
-    }
     legacy(Route.Photo.PATTERN, appViewModel) { state, entry ->
         PhotoScreen(state, appViewModel.storageBaseUrl, entry.argument("id"))
     }

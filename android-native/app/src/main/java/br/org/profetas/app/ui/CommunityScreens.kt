@@ -32,26 +32,6 @@ import java.util.Locale
     Text("${text.length}/4000",style=MaterialTheme.typography.bodySmall)
     Button(enabled=!s.saving && name.trim().length>=2 && text.trim().length>=5,onClick={vm.action("Pedido enviado à equipe pastoral.",done) {prayers.send(name,text)}}) {Text("Enviar pedido")}
 }
-@Composable fun StudiesScreen(s:AppState,vm:AppViewModel,go:(String)->Unit) = Page {
-    Heading("Estudos e trilhas", "Leia no seu ritmo e acompanhe suas conclusões neste aparelho.")
-    var query by rememberSaveable {mutableStateOf("")}
-    Field("Buscar estudo ou tema",query,{query=it})
-    LoadStatus(s,"Estudos",vm::reload)
-    val studies=s.studies.filter {"${it.title} ${it.category} ${it.description}".contains(query,true)}
-    if(studies.isEmpty() && !s.loading) Empty("Nenhum estudo encontrado.")
-    studies.forEach { study -> Panel(study.title,"${study.category}${if(study.id in s.completed) " • Concluído" else ""}\n${study.description}",{go("study/${study.id}")}) }
-}
-@Composable fun StudyScreen(s:AppState,vm:AppViewModel,id:String) = Page {
-    val study=s.studies.find {it.id==id}
-    if(study==null) {Empty("Estudo indisponível."); return@Page}
-    val context=LocalContext.current
-    Heading(study.title,study.category)
-    Text(study.description)
-    HorizontalDivider()
-    Text(study.content,style=MaterialTheme.typography.bodyLarge)
-    Button(onClick={vm.toggleStudy(id)}) {Text(if(id in s.completed) "Marcar como não concluído" else "Concluir estudo")}
-    OutlinedButton(onClick={share(context,"${study.title}\n\n${study.content}")}) {Text("Compartilhar estudo")}
-}
 @Composable fun BirthdaysScreen(s:AppState,vm:AppViewModel,go:(String)->Unit) = Page {
     Heading("Aniversariantes", "Celebre a vida de quem caminha com você.")
     if(!s.loggedIn) {Empty("Entre para consultar os aniversariantes que autorizaram a divulgação."); Button(onClick={go("auth")}) {Text("Entrar")}; return@Page}

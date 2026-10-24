@@ -4,6 +4,7 @@ import android.content.Context
 import br.org.profetas.app.account.AccountRepository
 import br.org.profetas.app.account.ContentWriteGuard
 import br.org.profetas.app.bible.BibleRepository
+import br.org.profetas.app.bible.FavoriteVerses
 import br.org.profetas.app.birthday.BirthdayRepository
 import br.org.profetas.app.church.ChurchRepository
 import br.org.profetas.app.event.EventRepository
@@ -12,6 +13,7 @@ import br.org.profetas.app.event.reminder.ReminderScheduler
 import br.org.profetas.app.event.weekly.WeeklyServiceRepository
 import br.org.profetas.app.gallery.GalleryRepository
 import br.org.profetas.app.prayer.PrayerRepository
+import br.org.profetas.app.study.CompletedStudies
 import br.org.profetas.app.study.StudyRepository
 import br.org.profetas.app.support.http.SupabaseClient
 import br.org.profetas.app.support.http.SupabaseConfig
@@ -54,8 +56,16 @@ class AppContainer(context: Context) {
 
     val userMessages = UserMessages()
 
-    // Mesmo arquivo de preferências do AppViewModel: os lembretes já ativados continuam valendo.
-    val reminders = ReminderScheduler(context, context.getSharedPreferences("preferences", Context.MODE_PRIVATE))
+    // Mesmo arquivo de preferências que o app sempre usou: lembretes, favoritos e estudos já marcados continuam.
+    private val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+
+    val reminders = ReminderScheduler(context, preferences)
+
+    // Sem login, o que se marca fica sob "visitante", como no app antigo.
+    private val accountKey = { client.session?.userId ?: "visitante" }
+
+    val favoriteVerses = FavoriteVerses(preferences, accountKey)
+    val completedStudies = CompletedStudies(preferences, accountKey)
 
     val isConfigured: Boolean get() = client.isConfigured
 

@@ -5,8 +5,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import br.org.profetas.app.account.ContentAccess
 import br.org.profetas.app.account.Profile
-import br.org.profetas.app.bible.Book
-import br.org.profetas.app.bible.Chapter
 import br.org.profetas.app.birthday.Birthday
 import br.org.profetas.app.church.Church
 import br.org.profetas.app.event.Event
@@ -26,9 +24,7 @@ data class AppState(
     val birthdays: List<Birthday> = emptyList(), val photos: List<Photo> = emptyList(), val church: Church = Church(),
     val profile: Profile? = null, val loggedIn: Boolean = false, val email: String = "",
     val registrations: List<Registration> = emptyList(), val prayers: List<Prayer> = emptyList(),
-    val books: List<Book> = emptyList(), val chapter: Chapter? = null, val bibleLoading: Boolean = false,
-    val bibleError: String? = null, val dark: Boolean = false, val completed: Set<String> = emptySet(),
-    val favorites: Set<String> = emptySet(), val reminders: Set<String> = emptySet()
+    val dark: Boolean = false, val reminders: Set<String> = emptySet()
 ) {
     val isAdmin: Boolean get() = loggedIn && ContentAccess.canManage(profile)
 }
@@ -42,19 +38,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     val storageBaseUrl: String get() = container.storageBaseUrl
 
-    private var chapterGeneration = 0
     init { reload() }
     fun dismissMessage() { mutable.update { it.copy(message = null) } }
     fun message(text: String) { mutable.update { it.copy(message = text) } }
     fun setDark(value: Boolean) { prefs.edit().putBoolean("dark", value).apply(); mutable.update { it.copy(dark = value) } }
-    private fun localKey(type: String) = "$type:${account.session?.userId ?: "visitante"}"
-    private fun readSet(type: String) = prefs.getStringSet(localKey(type), emptySet())!!.toSet()
-    fun toggleStudy(id: String) { toggle("studies", id); mutable.update { it.copy(completed = readSet("studies")) } }
-    fun toggleFavorite(id: String) { toggle("favorites", id); mutable.update { it.copy(favorites = readSet("favorites")) } }
-    private fun toggle(type: String, id: String) {
-        val values = readSet(type).toMutableSet(); if (!values.add(id)) values.remove(id)
-        prefs.edit().putStringSet(localKey(type), values).apply()
-    }
     // Até a Task 15 a tela antiga de Ajustes ainda desativa lembretes por aqui; quem agenda é o ReminderScheduler.
     fun cancelReminders() {
         container.reminders.enabledIds().forEach(container.reminders::cancel)
@@ -81,7 +68,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     if (ContentAccess.canManage(state.value.profile)) load("Orações", { container.prayers.all() }) { s,v -> s.copy(prayers=v) }
                 } else mutable.update { it.copy(birthdays = emptyList()) }
             }
-            mutable.update { it.copy(loading = false, loggedIn = account.session != null, email = account.session?.email.orEmpty(), completed=readSet("studies"), favorites=readSet("favorites"), reminders=container.reminders.enabledIds()) }
+            mutable.update { it.copy(loading = false, loggedIn = account.session != null, email = account.session?.email.orEmpty(), reminders=container.reminders.enabledIds()) }
         }
     }
     fun action(success: String, onSuccess: () -> Unit = {}, block: suspend AppContainer.() -> Unit) {
@@ -97,7 +84,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun register(name: String, email: String, password: String, done: () -> Unit) = action("Cadastro recebido. Se a confirmação estiver habilitada, confira seu e-mail.", done) { account.register(name, email, password) }
     fun logout() = action("Você saiu da conta.") {
         try { account.logout() } finally {
-            mutable.update { it.copy(loggedIn=false, profile=null, email="", birthdays=emptyList(), registrations=emptyList(), prayers=emptyList(), completed=emptySet(), favorites=emptySet()) }
+            mutable.update { it.copy(loggedIn=false, profile=null, email="", birthdays=emptyList(), registrations=emptyList(), prayers=emptyList()) }
         }
     }
     fun delete(table: String, id: String) = action("Registro excluído.") {
@@ -109,24 +96,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             "oracoes" -> prayers.delete(id)
             "inscricoes" -> registrations.deleteAsAdmin(id)
             else -> throw IllegalArgumentException("Seção desconhecida: $table")
-        }
-    }
-    fun loadBooks() {
-        if (state.value.books.isNotEmpty() || state.value.bibleLoading) return
-        viewModelScope.launch {
-            mutable.update { it.copy(bibleLoading=true,bibleError=null) }
-            try { val books = container.bible.books(); mutable.update { it.copy(books=books) } }
-            catch(e: Exception) { if(e is CancellationException) throw e; mutable.update { it.copy(bibleError=e.message ?: "Não foi possível consultar os livros.") } }
-            finally { mutable.update { it.copy(bibleLoading=false) } }
-        }
-    }
-    fun loadChapter(book: Book, number: Int) {
-        val generation = ++chapterGeneration
-        viewModelScope.launch {
-            mutable.update { it.copy(bibleLoading=true,bibleError=null,chapter=null) }
-            try { val chapter = container.bible.chapter(book, number); if(generation==chapterGeneration) mutable.update { it.copy(chapter=chapter) } }
-            catch(e: Exception) { if(e is CancellationException) throw e; if(generation==chapterGeneration) mutable.update { it.copy(bibleError=e.message ?: "Não foi possível carregar o capítulo.") } }
-            finally { if(generation==chapterGeneration) mutable.update { it.copy(bibleLoading=false) } }
         }
     }
 }

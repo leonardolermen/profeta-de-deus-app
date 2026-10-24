@@ -21,10 +21,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import br.org.profetas.app.AppContainer
 import br.org.profetas.app.AppViewModel
+import br.org.profetas.app.bible.BibleViewModel
 import br.org.profetas.app.church.ChurchViewModel
 import br.org.profetas.app.event.EventsScreen
 import br.org.profetas.app.event.EventsViewModel
 import br.org.profetas.app.home.HomeScreen
+import br.org.profetas.app.study.StudiesViewModel
 import br.org.profetas.app.theme.ProfetasTheme
 
 // O que o puxar-para-atualizar precisa da tela visível: o que recarregar e se há carga em curso.
@@ -36,10 +38,14 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
     val appViewModel: AppViewModel = viewModel()
     val eventsViewModel: EventsViewModel = viewModel(factory = EventsViewModel.Factory)
     val churchViewModel: ChurchViewModel = viewModel(factory = ChurchViewModel.Factory)
+    val bibleViewModel: BibleViewModel = viewModel(factory = BibleViewModel.Factory)
+    val studiesViewModel: StudiesViewModel = viewModel(factory = StudiesViewModel.Factory)
 
     val appState by appViewModel.state.collectAsStateWithLifecycle()
     val eventsState by eventsViewModel.state.collectAsStateWithLifecycle()
     val churchState by churchViewModel.state.collectAsStateWithLifecycle()
+    val bibleState by bibleViewModel.state.collectAsStateWithLifecycle()
+    val studiesState by studiesViewModel.state.collectAsStateWithLifecycle()
     val profile by container.account.currentProfile.collectAsStateWithLifecycle()
 
     val navController = rememberNavController()
@@ -93,6 +99,9 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
             },
             isBusy = eventsState.loading,
         )
+        Route.Bible -> VisibleScreen(reload = bibleViewModel::reload, isBusy = bibleState.isBusy)
+        Route.Studies, is Route.Study ->
+            VisibleScreen(reload = studiesViewModel::reload, isBusy = studiesState.loading)
         else -> VisibleScreen(reload = appViewModel::reload, isBusy = appState.loading || appState.saving)
     }
 
@@ -146,6 +155,8 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
                     }
 
                     eventDestinations(container, eventsViewModel, navigator)
+
+                    bibleDestinations(container, bibleViewModel, studiesViewModel, navigator)
 
                     legacyDestinations(appViewModel, navigator)
                 }
