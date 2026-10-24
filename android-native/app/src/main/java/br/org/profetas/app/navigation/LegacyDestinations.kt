@@ -14,11 +14,9 @@ import br.org.profetas.app.ui.AuthScreen
 import br.org.profetas.app.ui.ContactScreen
 import br.org.profetas.app.ui.EditorScreen
 import br.org.profetas.app.ui.Empty
-import br.org.profetas.app.ui.GalleryScreen
 import br.org.profetas.app.ui.Heading
 import br.org.profetas.app.ui.LoadStatus
 import br.org.profetas.app.ui.Page
-import br.org.profetas.app.ui.PhotoScreen
 import br.org.profetas.app.ui.ProfileScreen
 import br.org.profetas.app.ui.SettingsScreen
 
@@ -29,7 +27,6 @@ fun NavGraphBuilder.legacyDestinations(appViewModel: AppViewModel, navigator: Na
     val back = navigator::back
 
     legacy(Route.Settings, appViewModel) { state -> SettingsScreen(state, appViewModel, goPath) }
-    legacy(Route.Gallery, appViewModel) { state -> GalleryScreen(state, appViewModel, goPath) }
     legacy(Route.Contact, appViewModel) { state -> ContactScreen(state, appViewModel) }
     legacy(Route.Profile, appViewModel) { state -> ProfileScreen(state, appViewModel) }
     legacy(Route.Admin, appViewModel) { state -> AdminScreen(state, appViewModel, goPath) }
@@ -41,9 +38,6 @@ fun NavGraphBuilder.legacyDestinations(appViewModel: AppViewModel, navigator: Na
         legacy(route, appViewModel) { state -> AuthScreen(state, appViewModel, back) }
     }
 
-    legacy(Route.Photo.PATTERN, appViewModel) { state, entry ->
-        PhotoScreen(state, appViewModel.storageBaseUrl, entry.argument("id"))
-    }
     legacy(Route.Editor.PATTERN, appViewModel) { state, entry ->
         EditorScreen(state, appViewModel, entry.argument("section"), entry.argument("id"), back)
     }
