@@ -56,6 +56,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.work:work-runtime-ktx:2.10.1")
     implementation("androidx.core:core-ktx:1.16.0")
+    implementation("androidx.exifinterface:exifinterface:1.4.1")
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     // HandshakeCertificates/HeldCertificate: certificado https descartável para o MockWebServer dos testes
