@@ -19,6 +19,8 @@ import br.org.profetas.app.support.http.SupabaseClient
 import br.org.profetas.app.support.http.SupabaseConfig
 import br.org.profetas.app.support.message.UserMessages
 import br.org.profetas.app.support.session.KeystoreSessionStorage
+import br.org.profetas.app.support.storage.AndroidImageReader
+import br.org.profetas.app.support.storage.ImageUploader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -53,6 +55,8 @@ class AppContainer(context: Context) {
     val gallery = GalleryRepository(client, guard)
     val church = ChurchRepository(client, guard)
     val bible = BibleRepository(client)
+
+    val imageUploader = ImageUploader(client, AndroidImageReader(context.contentResolver))
 
     val userMessages = UserMessages()
 
