@@ -33,22 +33,6 @@ import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
 
-@Composable fun EventCard(event: Event, click:()->Unit) = Panel(event.title, "${displayDate(event.date)} • ${event.type.label}", click)
-@Composable fun EventsScreen(s:AppState,vm:AppViewModel,go:(String)->Unit) = Page {
-    Heading("Agenda da comunidade")
-    var query by rememberSaveable { mutableStateOf("") }
-    var type by rememberSaveable { mutableStateOf("todos") }
-    var past by rememberSaveable { mutableStateOf(false) }
-    Field("Buscar evento",query,{query=it})
-    Row(Modifier.horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-        listOf("todos","culto","campanha","batismo").forEach { item -> FilterChip(selected=type==item,onClick={type=item},label={Text(item.replaceFirstChar { it.uppercase() })}) }
-    }
-    Row { Checkbox(past,{past=it}); Text("Incluir eventos anteriores",Modifier.padding(top=12.dp)) }
-    LoadStatus(s,"Eventos",vm::reload)
-    val filtered=s.events.filter { (past || isFuture(it.date)) && (type=="todos" || type==it.type.databaseValue) && "${it.title} ${it.description}".contains(query,true) }
-    if(filtered.isEmpty() && !s.loading) Empty("Nenhum evento encontrado.")
-    filtered.forEach { EventCard(it) {go("event/${it.id}")} }
-}
 @Composable fun EventScreen(s:AppState,vm:AppViewModel,id:String,go:(String)->Unit) = Page {
     val event=s.events.find { it.id==id }
     if(event==null) { Empty(if(s.loading) "Carregando evento…" else "Evento indisponível."); LoadStatus(s,"Eventos",vm::reload); return@Page }

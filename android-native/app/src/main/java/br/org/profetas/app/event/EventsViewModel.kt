@@ -7,7 +7,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import br.org.profetas.app.ProfetasApplication
+import br.org.profetas.app.event.weekly.WeeklyService
+import br.org.profetas.app.event.weekly.WeeklyServiceRepository
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,9 +23,13 @@ data class EventsState(
     val loading: Boolean = false,
     val failure: String? = null,
     val events: List<Event> = emptyList(),
+    val weeklyServices: List<WeeklyService> = emptyList(),
 )
 
-class EventsViewModel(private val events: EventRepository) : ViewModel() {
+class EventsViewModel(
+    private val events: EventRepository,
+    private val weekly: WeeklyServiceRepository,
+) : ViewModel() {
 
     private val mutableState = MutableStateFlow(EventsState())
 
@@ -40,8 +48,17 @@ class EventsViewModel(private val events: EventRepository) : ViewModel() {
 
         viewModelScope.launch {
             try {
-                val loaded = events.all()
-                mutableState.update { current -> current.copy(loading = false, events = loaded) }
+                coroutineScope {
+                    val loadedEvents = async { events.all() }
+                    val loadedWeekly = async { weekly.all() }
+
+                    val eventList = loadedEvents.await()
+                    val weeklyList = loadedWeekly.await()
+
+                    mutableState.update { current ->
+                        current.copy(loading = false, events = eventList, weeklyServices = weeklyList)
+                    }
+                }
             } catch (e: Exception) {
                 if (e is CancellationException) {
                     throw e
@@ -61,13 +78,26 @@ class EventsViewModel(private val events: EventRepository) : ViewModel() {
         .take(limit)
         .map { (event, _) -> event }
 
+    // Mantém a ordem do banco (data crescente). `includePast` só escolhe quais linhas entram, como os outros filtros.
+    fun filtered(query: String, type: EventType?, includePast: Boolean, now: Instant = Instant.now()): List<Event> =
+        state.value.events.filter { event ->
+            val instant = eventInstant(event.date)
+
+            val isInPeriod = instant != null && (includePast || instant.isAfter(now))
+            val isOfType = type == null || event.type == type
+            val matchesQuery = event.title.contains(query, ignoreCase = true) ||
+                event.description.contains(query, ignoreCase = true)
+
+            isInPeriod && isOfType && matchesQuery
+        }
+
     companion object {
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = this[APPLICATION_KEY] as ProfetasApplication
 
-                EventsViewModel(application.container.events)
+                EventsViewModel(application.container.events, application.container.weekly)
             }
         }
     }

@@ -19,7 +19,6 @@ import br.org.profetas.app.ui.ContactScreen
 import br.org.profetas.app.ui.EditorScreen
 import br.org.profetas.app.ui.Empty
 import br.org.profetas.app.ui.EventScreen
-import br.org.profetas.app.ui.EventsScreen
 import br.org.profetas.app.ui.GalleryScreen
 import br.org.profetas.app.ui.Heading
 import br.org.profetas.app.ui.LoadStatus
@@ -39,7 +38,6 @@ fun NavGraphBuilder.legacyDestinations(appViewModel: AppViewModel, navigator: Na
     val back = navigator::back
 
     legacy(Route.Bible, appViewModel) { state -> BibleScreen(state, appViewModel) }
-    legacy(Route.Events, appViewModel) { state -> EventsScreen(state, appViewModel, goPath) }
     legacy(Route.Settings, appViewModel) { state -> SettingsScreen(state, appViewModel, goPath) }
     legacy(Route.Prayer, appViewModel) { state -> PrayerScreen(state, appViewModel, back) }
     legacy(Route.Birthdays, appViewModel) { state -> BirthdaysScreen(state, appViewModel, goPath) }

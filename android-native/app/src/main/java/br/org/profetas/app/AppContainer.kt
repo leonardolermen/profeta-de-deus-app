@@ -8,6 +8,7 @@ import br.org.profetas.app.birthday.BirthdayRepository
 import br.org.profetas.app.church.ChurchRepository
 import br.org.profetas.app.event.EventRepository
 import br.org.profetas.app.event.registration.RegistrationRepository
+import br.org.profetas.app.event.weekly.WeeklyServiceRepository
 import br.org.profetas.app.gallery.GalleryRepository
 import br.org.profetas.app.prayer.PrayerRepository
 import br.org.profetas.app.study.StudyRepository
@@ -41,6 +42,7 @@ class AppContainer(context: Context) {
     private val guard = ContentWriteGuard(account)
 
     val events = EventRepository(client, guard)
+    val weekly = WeeklyServiceRepository(client, guard)
     val registrations = RegistrationRepository(client, guard)
     val studies = StudyRepository(client, guard)
     val prayers = PrayerRepository(client, guard)

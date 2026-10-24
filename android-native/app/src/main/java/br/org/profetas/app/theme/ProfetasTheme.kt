@@ -11,6 +11,7 @@ fun ProfetasTheme(isDark: Boolean, content: @Composable () -> Unit) {
         darkColorScheme(
             primary = Palette.DarkPrimary,
             secondary = Palette.DarkAccent,
+            primaryContainer = Palette.DarkDayBadge,
             background = Palette.DarkBackground,
             surface = Palette.DarkSurface,
             onBackground = Palette.DarkText,
@@ -22,6 +23,7 @@ fun ProfetasTheme(isDark: Boolean, content: @Composable () -> Unit) {
         lightColorScheme(
             primary = Palette.Primary,
             secondary = Palette.Accent,
+            primaryContainer = Palette.DayBadge,
             background = Palette.Background,
             surface = Palette.Surface,
             onBackground = Palette.Text,

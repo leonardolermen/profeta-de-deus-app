@@ -22,6 +22,7 @@ import androidx.navigation.compose.rememberNavController
 import br.org.profetas.app.AppContainer
 import br.org.profetas.app.AppViewModel
 import br.org.profetas.app.church.ChurchViewModel
+import br.org.profetas.app.event.EventsScreen
 import br.org.profetas.app.event.EventsViewModel
 import br.org.profetas.app.home.HomeScreen
 import br.org.profetas.app.theme.ProfetasTheme
@@ -77,6 +78,7 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
             },
             isBusy = eventsState.loading || churchState.loading,
         )
+        Route.Events -> VisibleScreen(reload = eventsViewModel::reload, isBusy = eventsState.loading)
         else -> VisibleScreen(reload = appViewModel::reload, isBusy = appState.loading || appState.saving)
     }
 
@@ -116,6 +118,14 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
                             eventsViewModel = eventsViewModel,
                             churchViewModel = churchViewModel,
                             greetingName = profile?.name,
+                            storageBaseUrl = container.storageBaseUrl,
+                            onNavigate = navigator::go,
+                        )
+                    }
+
+                    composable(Route.Events.pattern) {
+                        EventsScreen(
+                            viewModel = eventsViewModel,
                             storageBaseUrl = container.storageBaseUrl,
                             onNavigate = navigator::go,
                         )
