@@ -15,8 +15,17 @@ data class Photo(
         path?.let { storedPath -> StorageBucket.GALLERY.publicUrl(baseUrl, storedPath) } ?: url
 }
 
+// Uma linha de fotos tem exatamente uma origem (check fotos_url_ou_caminho no banco): a URL externa das fotos
+// antigas ou o caminho no bucket galeria das enviadas pelo app.
+sealed interface PhotoSource {
+
+    data class ExternalUrl(val url: String) : PhotoSource
+
+    data class StoragePath(val path: String) : PhotoSource
+}
+
 data class PhotoDraft(
     val title: String,
-    val url: String,
     val album: String,
+    val source: PhotoSource,
 )

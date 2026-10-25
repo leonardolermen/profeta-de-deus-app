@@ -38,8 +38,19 @@ class GalleryRepository(
         path = textOrNull("caminho"),
     )
 
-    private fun PhotoDraft.toRow(): JSONObject = JSONObject()
-        .put("titulo", title)
-        .put("url", url)
-        .put("album", album)
+    // JSONObject.put com null apaga a chave; só o NULL explícito limpa, num PATCH, a origem que deixou de valer.
+    private fun PhotoDraft.toRow(): JSONObject {
+        val row = JSONObject()
+            .put("titulo", title)
+            .put("album", album)
+
+        return when (source) {
+            is PhotoSource.ExternalUrl -> row
+                .put("url", source.url)
+                .put("caminho", JSONObject.NULL)
+            is PhotoSource.StoragePath -> row
+                .put("url", JSONObject.NULL)
+                .put("caminho", source.path)
+        }
+    }
 }

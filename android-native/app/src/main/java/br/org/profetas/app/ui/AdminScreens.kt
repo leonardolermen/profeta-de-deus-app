@@ -14,6 +14,7 @@ import br.org.profetas.app.church.Church
 import br.org.profetas.app.event.EventDraft
 import br.org.profetas.app.event.EventType
 import br.org.profetas.app.gallery.PhotoDraft
+import br.org.profetas.app.gallery.PhotoSource
 import br.org.profetas.app.study.StudyDraft
 import br.org.profetas.app.event.displayDate
 import br.org.profetas.app.event.eventInstant
@@ -112,7 +113,7 @@ import java.time.format.DateTimeFormatter
                 }
                 "fotos" -> {
                     require(isSecureUrl(value("url").trim())) {"Informe uma URL HTTPS válida."}
-                    val draft=PhotoDraft(title=trimmed("titulo"),url=trimmed("url"),album=trimmed("album"))
+                    val draft=PhotoDraft(title=trimmed("titulo"),album=trimmed("album"),source=PhotoSource.ExternalUrl(trimmed("url")))
                     vm.action("Cadastro salvo.",done) {gallery.save(saveId,draft)}
                 }
                 "aniversariantes" -> {
