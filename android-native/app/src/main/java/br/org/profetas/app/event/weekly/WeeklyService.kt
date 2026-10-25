@@ -18,7 +18,7 @@ data class WeeklyService(
     val order: Int,
 ) {
 
-    val dayLabel: String get() = DAY_LABELS[dayOfWeek.databaseDay]
+    val dayLabel: String get() = dayOfWeek.shortLabel
 
     companion object {
 
@@ -51,3 +51,5 @@ data class WeeklyServiceDraft(
 fun dayOfWeekFromDatabase(databaseDay: Int): DayOfWeek = DayOfWeek.SUNDAY.plus(databaseDay.toLong())
 
 val DayOfWeek.databaseDay: Int get() = value % 7
+
+val DayOfWeek.shortLabel: String get() = DAY_LABELS[databaseDay]
