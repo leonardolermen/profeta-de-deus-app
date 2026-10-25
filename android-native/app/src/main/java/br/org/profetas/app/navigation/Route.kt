@@ -137,33 +137,87 @@ sealed interface Route {
         override val title = "Administração"
     }
 
-    data class Editor(val section: String, val id: String) : Route {
-        override val path = "editor/$section/$id"
-        override val title = "Editar"
+    // Editores da Administração: "new" no lugar do id abre um cadastro novo.
+    data class EventEditor(val id: String) : Route {
+        override val path = "admin/event/$id"
+        override val title = "Evento"
         override val pattern = PATTERN
 
         companion object {
-            const val PATTERN = "editor/{section}/{id}"
+            const val PATTERN = "admin/event/{id}"
         }
     }
 
+    data class WeeklyServiceEditor(val id: String) : Route {
+        override val path = "admin/weekly/$id"
+        override val title = "Culto semanal"
+        override val pattern = PATTERN
+
+        companion object {
+            const val PATTERN = "admin/weekly/{id}"
+        }
+    }
+
+    data class StudyEditor(val id: String) : Route {
+        override val path = "admin/study/$id"
+        override val title = "Estudo"
+        override val pattern = PATTERN
+
+        companion object {
+            const val PATTERN = "admin/study/{id}"
+        }
+    }
+
+    data class PhotoEditor(val id: String) : Route {
+        override val path = "admin/photo/$id"
+        override val title = "Foto"
+        override val pattern = PATTERN
+
+        companion object {
+            const val PATTERN = "admin/photo/{id}"
+        }
+    }
+
+    data class BirthdayEditor(val id: String) : Route {
+        override val path = "admin/birthday/$id"
+        override val title = "Aniversariante"
+        override val pattern = PATTERN
+
+        companion object {
+            const val PATTERN = "admin/birthday/{id}"
+        }
+    }
+
+    data object ChurchEditor : Route {
+        override val path = "admin/church"
+        override val title = "Igreja"
+    }
+
     companion object {
+
+        const val NEW_RECORD = "new"
 
         // As quatro abas do app Expo (app/(tabs)/_layout.tsx), na mesma ordem.
         val tabs: List<Route> = listOf(Home, Bible, Events, Settings)
 
         private val withoutArguments: List<Route> = listOf(
             Home, Bible, Events, Settings, Prayer, Campaigns, Baptism, Birthdays, Studies, Gallery, History,
-            Contact, Privacy, Login, Register, Recovery, Profile, MyRegistrations, Admin,
+            Contact, Privacy, Login, Register, Recovery, Profile, MyRegistrations, Admin, ChurchEditor,
         )
 
         fun fromPath(path: String): Route? {
-            val segments = path.trim('/').split('/')
+            val trimmed = path.trim('/')
+
+            val withoutArgument = withoutArguments.firstOrNull { route -> route.path == trimmed }
+            if (withoutArgument != null) {
+                return withoutArgument
+            }
+
+            val segments = trimmed.split('/')
 
             return when (segments.size) {
-                1 -> withoutArguments.firstOrNull { route -> route.path == segments[0] }
                 2 -> withOneArgument(segments[0], segments[1])
-                3 -> if (segments[0] == "editor") Editor(segments[1], segments[2]) else null
+                3 -> if (segments[0] == "admin") adminEditor(segments[1], segments[2]) else null
                 else -> null
             }
         }
@@ -172,6 +226,15 @@ sealed interface Route {
             "event" -> EventDetail(id)
             "study" -> Study(id)
             "photo" -> Photo(id)
+            else -> null
+        }
+
+        private fun adminEditor(kind: String, id: String): Route? = when (kind) {
+            "event" -> EventEditor(id)
+            "weekly" -> WeeklyServiceEditor(id)
+            "study" -> StudyEditor(id)
+            "photo" -> PhotoEditor(id)
+            "birthday" -> BirthdayEditor(id)
             else -> null
         }
     }

@@ -87,15 +87,4 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             mutable.update { it.copy(loggedIn=false, profile=null, email="", birthdays=emptyList(), registrations=emptyList(), prayers=emptyList()) }
         }
     }
-    fun delete(table: String, id: String) = action("Registro excluído.") {
-        when (table) {
-            "eventos" -> events.delete(id)
-            "estudos" -> studies.delete(id)
-            "fotos" -> gallery.delete(id)
-            "aniversariantes" -> birthdays.delete(id)
-            "oracoes" -> prayers.delete(id)
-            "inscricoes" -> registrations.deleteAsAdmin(id)
-            else -> throw IllegalArgumentException("Seção desconhecida: $table")
-        }
-    }
 }

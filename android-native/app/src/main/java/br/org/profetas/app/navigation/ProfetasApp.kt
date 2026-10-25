@@ -23,6 +23,7 @@ import br.org.profetas.app.AppContainer
 import br.org.profetas.app.AppViewModel
 import br.org.profetas.app.account.AccountEvent
 import br.org.profetas.app.account.AccountViewModel
+import br.org.profetas.app.admin.AdminViewModel
 import br.org.profetas.app.bible.BibleViewModel
 import br.org.profetas.app.birthday.BirthdaysViewModel
 import br.org.profetas.app.church.ChurchViewModel
@@ -49,6 +50,7 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
     val prayerViewModel: PrayerViewModel = viewModel(factory = PrayerViewModel.Factory)
     val birthdaysViewModel: BirthdaysViewModel = viewModel(factory = BirthdaysViewModel.Factory)
     val galleryViewModel: GalleryViewModel = viewModel(factory = GalleryViewModel.Factory)
+    val adminViewModel: AdminViewModel = viewModel(factory = AdminViewModel.Factory)
 
     val appState by appViewModel.state.collectAsStateWithLifecycle()
     val eventsState by eventsViewModel.state.collectAsStateWithLifecycle()
@@ -57,6 +59,7 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
     val studiesState by studiesViewModel.state.collectAsStateWithLifecycle()
     val birthdaysState by birthdaysViewModel.state.collectAsStateWithLifecycle()
     val galleryState by galleryViewModel.state.collectAsStateWithLifecycle()
+    val adminState by adminViewModel.state.collectAsStateWithLifecycle()
     val profile by container.account.currentProfile.collectAsStateWithLifecycle()
     val isLoggedIn by container.account.isLoggedIn.collectAsStateWithLifecycle()
 
@@ -98,9 +101,8 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
         recoveryLink?.let(accountViewModel::acceptRecovery)
     }
 
-    // Os Ajustes e a Administração ainda leem a conta do AppViewModel (até as Tasks 15 e 17): entrar, sair ou
-    // trocar o nome precisa recarregá-lo. O nome entra na chave porque reload() refaz o perfil sem mudá-lo, então
-    // não gira em laço.
+    // Os Ajustes ainda leem a conta do AppViewModel (até a Task 15): entrar, sair ou trocar o nome precisa
+    // recarregá-lo. O nome entra na chave porque reload() refaz o perfil sem mudá-lo, então não gira em laço.
     val accountName = profile?.name
     LaunchedEffect(isLoggedIn, accountName) {
         appViewModel.reload()
@@ -132,6 +134,9 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
         Route.Profile -> VisibleScreen(reload = accountViewModel::loadProfile, isBusy = false)
         Route.History, Route.Contact, Route.Privacy ->
             VisibleScreen(reload = churchViewModel::reload, isBusy = churchState.loading)
+        Route.Admin, is Route.EventEditor, is Route.WeeklyServiceEditor, is Route.StudyEditor, is Route.PhotoEditor,
+        is Route.BirthdayEditor, Route.ChurchEditor ->
+            VisibleScreen(reload = adminViewModel::reload, isBusy = adminState.loading)
         else -> VisibleScreen(reload = appViewModel::reload, isBusy = appState.loading || appState.saving)
     }
 
@@ -195,6 +200,8 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
                     churchDestinations(churchViewModel)
 
                     accountDestinations(accountViewModel, navigator)
+
+                    adminDestinations(container, adminViewModel, accountViewModel, navigator)
 
                     legacyDestinations(appViewModel, navigator)
                 }
