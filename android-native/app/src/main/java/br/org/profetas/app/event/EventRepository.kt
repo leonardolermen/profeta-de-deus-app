@@ -11,18 +11,18 @@ import org.json.JSONObject
 
 private const val TABLE = "eventos"
 
-class EventRepository(private val client: SupabaseClient, private val guard: ContentWriteGuard) {
+class EventRepository(private val client: SupabaseClient, private val guard: ContentWriteGuard) : EventWriter {
 
     suspend fun all(): List<Event> =
         client.rows(TABLE, "select=*&order=data_evento.asc").map { row -> row.toEvent() }
 
-    suspend fun save(id: String?, draft: EventDraft) {
+    override suspend fun save(id: String?, draft: EventDraft) {
         guard.requireAdmin()
 
         client.saveRow(TABLE, id, draft.toRow())
     }
 
-    suspend fun delete(id: String) {
+    override suspend fun delete(id: String) {
         guard.requireAdmin()
 
         client.deleteRow(TABLE, id)

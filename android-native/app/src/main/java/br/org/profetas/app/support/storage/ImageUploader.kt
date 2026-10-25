@@ -15,10 +15,10 @@ interface ImageReader {
     suspend fun readJpeg(source: Uri, maxSide: Int, quality: Int): ByteArray
 }
 
-class ImageUploader(private val client: SupabaseClient, private val reader: ImageReader) {
+class ImageUploader(private val client: SupabaseClient, private val reader: ImageReader) : PhotoStorage {
 
     /** Devolve o caminho dentro do bucket (`yyyy/<uuid>.jpg`), que é o que o banco guarda. */
-    suspend fun upload(bucket: StorageBucket, source: Uri): String {
+    override suspend fun upload(bucket: StorageBucket, source: Uri): String {
         val bytes = reader.readJpeg(source, DEFAULT_MAX_SIDE, JPEG_QUALITY)
 
         // Nome aleatório: duas pessoas enviando "IMG_001" nunca se sobrescrevem; o ano só organiza a pasta.
@@ -28,7 +28,7 @@ class ImageUploader(private val client: SupabaseClient, private val reader: Imag
         return path
     }
 
-    suspend fun remove(bucket: StorageBucket, path: String) {
+    override suspend fun remove(bucket: StorageBucket, path: String) {
         val body = JSONObject().put("prefixes", JSONArray().put(path))
 
         client.deleteWithBody("/storage/v1/object/${bucket.id}", body)

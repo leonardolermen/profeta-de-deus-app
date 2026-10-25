@@ -10,18 +10,21 @@ import org.json.JSONObject
 
 private const val TABLE = "fotos"
 
-class GalleryRepository(private val client: SupabaseClient, private val guard: ContentWriteGuard) {
+class GalleryRepository(
+    private val client: SupabaseClient,
+    private val guard: ContentWriteGuard,
+) : GalleryWriter {
 
     suspend fun all(): List<Photo> =
         client.rows(TABLE, "select=*&order=criado_em.desc").map { row -> row.toPhoto() }
 
-    suspend fun save(id: String?, draft: PhotoDraft) {
+    override suspend fun save(id: String?, draft: PhotoDraft) {
         guard.requireAdmin()
 
         client.saveRow(TABLE, id, draft.toRow())
     }
 
-    suspend fun delete(id: String) {
+    override suspend fun delete(id: String) {
         guard.requireAdmin()
 
         client.deleteRow(TABLE, id)
