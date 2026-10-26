@@ -14,6 +14,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import java.io.IOException
 
 private const val NOT_CONFIGURED_MESSAGE = "O serviço da comunidade ainda não está disponível."
 
@@ -69,7 +70,7 @@ class SupabaseClient(
             .header("Authorization", "Bearer $token")
             .build()
 
-        execute(request) { status, _ -> externalFailureMessage(status) }
+        execute(request) { status, _ -> FailureMessages.forExternal(status) }
     }
 
     fun adoptSession(json: JSONObject) {
@@ -164,7 +165,7 @@ class SupabaseClient(
             builder.method(method, requestBody)
         }
 
-        execute(builder.build(), ::supabaseFailureMessage)
+        execute(builder.build(), FailureMessages::forSupabase)
     }
 
     private suspend fun sendBytes(url: String, bytes: ByteArray, contentType: String, token: String): String =
@@ -177,36 +178,20 @@ class SupabaseClient(
                 .method("POST", bytes.toRequestBody(contentType.toMediaType()))
                 .build()
 
-            execute(request, ::supabaseFailureMessage)
+            execute(request, FailureMessages::forSupabase)
         }
 
     private fun execute(request: Request, failureMessage: (status: Int, body: String) -> String): String {
-        http.newCall(request).execute().use { response ->
-            val text = response.body?.string().orEmpty()
-            if (!response.isSuccessful) {
-                throw ApiException(response.code, failureMessage(response.code, text))
+        try {
+            http.newCall(request).execute().use { response ->
+                val text = response.body?.string().orEmpty()
+                if (!response.isSuccessful) {
+                    throw ApiException(response.code, failureMessage(response.code, text))
+                }
+                return text
             }
-            return text
+        } catch (e: IOException) {
+            throw ConnectionException(e)
         }
-    }
-
-    private fun supabaseFailureMessage(status: Int, body: String): String =
-        statusMessage(status) ?: runCatching {
-            val error = JSONObject(body)
-            error.optString(
-                "msg",
-                error.optString("error_description", error.optString("message", "Falha na solicitação.")),
-            )
-        }.getOrDefault("Falha na solicitação ($status).")
-
-    private fun externalFailureMessage(status: Int): String =
-        statusMessage(status) ?: "Não foi possível consultar a Bíblia ($status)."
-
-    private fun statusMessage(status: Int): String? = when (status) {
-        401 -> "Sua sessão expirou. Entre novamente."
-        403 -> "Você não tem permissão para esta ação."
-        409 -> "Este cadastro já existe."
-        429 -> "Muitas tentativas. Aguarde e tente novamente."
-        else -> null
     }
 }

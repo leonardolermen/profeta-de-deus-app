@@ -11,11 +11,13 @@ import okhttp3.tls.HeldCertificate
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
+import java.io.IOException
 import java.net.InetAddress
 
 private class InMemorySessionStorage(private var current: Session? = null) : SessionStorage {
@@ -143,6 +145,73 @@ class SupabaseClientTest {
         server.enqueue(MockResponse().setResponseCode(429))
         val tooMany = runCatching { client.get("/rest/v1/eventos") }.exceptionOrNull() as ApiException
         assertEquals("Muitas tentativas. Aguarde e tente novamente.", tooMany.message)
+    }
+
+    @Test fun mapsAuthErrorCodesToPortuguese() = runTest {
+        val client = SupabaseClient(config(), InMemorySessionStorage(null), http)
+        val cases = listOf(
+            Triple("invalid_credentials", 400, "E-mail ou senha incorretos."),
+            Triple("user_already_exists", 422, "Já existe uma conta com este e-mail."),
+            Triple("weak_password", 422, "Senha fraca. Escolha uma senha mais forte."),
+            Triple("email_not_confirmed", 400, "Confirme seu e-mail antes de entrar."),
+            Triple("same_password", 422, "A nova senha precisa ser diferente da atual."),
+            Triple(
+                "over_email_send_rate_limit",
+                429,
+                "Muitos e-mails enviados. Aguarde alguns minutos e tente novamente.",
+            ),
+        )
+
+        for ((code, status, expected) in cases) {
+            server.enqueue(
+                MockResponse().setResponseCode(status)
+                    .setBody("""{"code":$status,"error_code":"$code","msg":"English server text"}"""),
+            )
+
+            val error = runCatching { client.anonymousPost("/auth/v1/token", JSONObject()) }.exceptionOrNull()
+
+            assertEquals(code, expected, (error as ApiException).message)
+            assertEquals(code, status, error.status)
+        }
+    }
+
+    @Test fun readsAuthErrorCodeFromCodeField() = runTest {
+        val client = SupabaseClient(config(), InMemorySessionStorage(null), http)
+        server.enqueue(
+            MockResponse().setResponseCode(400)
+                .setBody("""{"code":"invalid_credentials","message":"Invalid login credentials"}"""),
+        )
+
+        val error = runCatching { client.anonymousPost("/auth/v1/token", JSONObject()) }.exceptionOrNull()
+
+        assertEquals("E-mail ou senha incorretos.", error?.message)
+    }
+
+    @Test fun neverForwardsServerTextForUnknownFailures() = runTest {
+        val client = SupabaseClient(config(), InMemorySessionStorage(null), http)
+        server.enqueue(
+            MockResponse().setResponseCode(400)
+                .setBody("""{"msg":"Invalid login credentials","error_description":"x","message":"y"}"""),
+        )
+        server.enqueue(MockResponse().setResponseCode(500).setBody("upstream timeout"))
+
+        val unknownCode = runCatching { client.anonymousPost("/auth/v1/token", JSONObject()) }.exceptionOrNull()
+        val notJson = runCatching { client.anonymousPost("/auth/v1/token", JSONObject()) }.exceptionOrNull()
+
+        assertEquals("Falha na solicitação (400).", unknownCode?.message)
+        assertEquals("Falha na solicitação (500).", notJson?.message)
+    }
+
+    @Test fun connectionFailureBecomesPortugueseMessageAndIsNotApiException() = runTest {
+        val client = SupabaseClient(config(), InMemorySessionStorage(Session("A", "R", "u", "e")), http)
+        server.shutdown()
+
+        val error = runCatching { client.get("/rest/v1/eventos") }.exceptionOrNull()
+
+        assertTrue(error is IOException)
+        assertFalse(error is ApiException)
+        assertEquals("Sem conexão com a internet. Verifique a rede e tente novamente.", error?.message)
+        assertTrue(error?.cause is IOException)
     }
 
     @Test fun uploadSendsRawBytesWithContentType() = runTest {

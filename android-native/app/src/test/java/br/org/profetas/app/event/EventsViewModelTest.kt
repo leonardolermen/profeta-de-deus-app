@@ -171,7 +171,8 @@ class EventsViewModelTest {
         viewModel.reload()
         val state = viewModel.state.first { current -> !current.loading }
 
-        assertEquals("banco fora do ar", state.failure)
+        // O texto do servidor ("banco fora do ar") não chega ao usuário: a falha vira a mensagem genérica por status.
+        assertEquals("Falha na solicitação (500).", state.failure)
         assertEquals(listOf("um"), state.events.map { event -> event.id })
     }
 
