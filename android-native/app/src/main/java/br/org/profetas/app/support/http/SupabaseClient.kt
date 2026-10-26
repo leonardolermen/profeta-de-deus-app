@@ -36,6 +36,10 @@ class SupabaseClient(
 
     private val refreshLock = Mutex()
 
+    // Estado em memoria e armazenamento mudam juntos: sem isso, um "Sair" entre os dois deixava no disco a sessao
+    // que acabou de ser descartada, e ela voltava na proxima abertura do app.
+    private val sessionWriteLock = Any()
+
     suspend fun get(path: String): String = authenticated(path, "GET")
 
     suspend fun post(path: String, body: JSONObject): String = authenticated(path, "POST", body)
@@ -74,25 +78,21 @@ class SupabaseClient(
     }
 
     fun adoptSession(json: JSONObject) {
-        val user = json.getJSONObject("user")
-        adoptSession(
-            Session(
-                access = json.getString("access_token"),
-                refresh = json.getString("refresh_token"),
-                userId = user.getString("id"),
-                email = user.optString("email"),
-            ),
-        )
+        adoptSession(sessionFrom(json))
     }
 
     fun adoptSession(session: Session) {
-        mutableSessionState.value = session
-        storage.save(session)
+        synchronized(sessionWriteLock) {
+            mutableSessionState.value = session
+            storage.save(session)
+        }
     }
 
     fun dropSession() {
-        mutableSessionState.value = null
-        storage.clear()
+        synchronized(sessionWriteLock) {
+            mutableSessionState.value = null
+            storage.clear()
+        }
     }
 
     private suspend fun authenticated(path: String, method: String, body: JSONObject? = null): String {
@@ -126,22 +126,49 @@ class SupabaseClient(
                 return
             }
 
-            val refreshToken = requireNotNull(session).refresh
+            val refreshing = requireNotNull(session)
             try {
                 val result = send(
                     config.url.trimEnd('/') + "/auth/v1/token?grant_type=refresh_token",
                     "POST",
-                    JSONObject().put("refresh_token", refreshToken),
+                    JSONObject().put("refresh_token", refreshing.refresh),
                 )
-                adoptSession(JSONObject(result))
+                replaceIfStillCurrent(refreshing, sessionFrom(JSONObject(result)))
             } catch (refreshError: ApiException) {
                 // 400/401/403 na renovacao: o token de renovacao e invalido, nao ha como recuperar a sessao.
                 if (refreshError.status in listOf(400, 401, 403)) {
-                    dropSession()
+                    replaceIfStillCurrent(refreshing, null)
                 }
                 throw refreshError
             }
         }
+    }
+
+    // O usuario pode sair (ou outra conta pode entrar pelo link de recuperacao) enquanto a renovacao esta no ar.
+    // Sem esta comparacao, a resposta atrasada devolvia a sessao de quem acabou de tocar em "Sair".
+    private fun replaceIfStillCurrent(refreshing: Session, renewed: Session?) {
+        synchronized(sessionWriteLock) {
+            if (session != refreshing) {
+                return
+            }
+
+            if (renewed == null) {
+                dropSession()
+            } else {
+                adoptSession(renewed)
+            }
+        }
+    }
+
+    private fun sessionFrom(json: JSONObject): Session {
+        val user = json.getJSONObject("user")
+
+        return Session(
+            access = json.getString("access_token"),
+            refresh = json.getString("refresh_token"),
+            userId = user.getString("id"),
+            email = user.optString("email"),
+        )
     }
 
     private suspend fun send(

@@ -4,8 +4,10 @@ import br.org.profetas.app.support.session.Session
 import br.org.profetas.app.support.session.SessionStorage
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
+import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.RecordedRequest
 import okhttp3.tls.HandshakeCertificates
 import okhttp3.tls.HeldCertificate
 import org.json.JSONObject
@@ -212,6 +214,29 @@ class SupabaseClientTest {
         assertFalse(error is ApiException)
         assertEquals("Sem conexão com a internet. Verifique a rede e tente novamente.", error?.message)
         assertTrue(error?.cause is IOException)
+    }
+
+    @Test fun refreshFinishingAfterLogoutDoesNotRestoreTheSession() = runTest {
+        val storage = InMemorySessionStorage(Session("A", "R", "u", "e"))
+        val client = SupabaseClient(config(), storage, http)
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse = when {
+                request.path.orEmpty().startsWith("/auth/v1/token") -> {
+                    // O usuário toca em "Sair" enquanto a renovação ainda está em andamento.
+                    client.dropSession()
+                    MockResponse().setBody(
+                        """{"access_token":"B","refresh_token":"R2","user":{"id":"u","email":"e"}}""",
+                    )
+                }
+                request.getHeader("Authorization") == "Bearer A" -> MockResponse().setResponseCode(401)
+                else -> MockResponse().setBody("[]")
+            }
+        }
+
+        runCatching { client.get("/rest/v1/eventos") }
+
+        assertNull(client.sessionState.value)
+        assertNull(storage.load())
     }
 
     @Test fun uploadSendsRawBytesWithContentType() = runTest {
