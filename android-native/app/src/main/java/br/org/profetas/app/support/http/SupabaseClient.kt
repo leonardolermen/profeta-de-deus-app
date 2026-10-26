@@ -62,7 +62,15 @@ class SupabaseClient(
     suspend fun fetchUser(accessToken: String): JSONObject =
         JSONObject(send(config.url.trimEnd('/') + "/auth/v1/user", token = accessToken))
 
-    suspend fun external(url: String, token: String): String = send(url, token = token, supabaseAuth = false)
+    // Serviço de terceiros (A Bíblia Digital): sem a apikey do Supabase e com mensagem de erro própria.
+    suspend fun external(url: String, token: String): String = withContext(Dispatchers.IO) {
+        val request = Request.Builder().url(url)
+            .header("Accept", "application/json")
+            .header("Authorization", "Bearer $token")
+            .build()
+
+        execute(request) { status, _ -> externalFailureMessage(status) }
+    }
 
     fun adoptSession(json: JSONObject) {
         val user = json.getJSONObject("user")
@@ -140,13 +148,11 @@ class SupabaseClient(
         method: String = "GET",
         body: JSONObject? = null,
         token: String? = null,
-        supabaseAuth: Boolean = true,
     ): String = withContext(Dispatchers.IO) {
-        val builder = Request.Builder().url(url).header("Accept", "application/json")
+        val builder = Request.Builder().url(url)
+            .header("Accept", "application/json")
+            .header("apikey", config.anonKey)
 
-        if (supabaseAuth) {
-            builder.header("apikey", config.anonKey)
-        }
         token?.takeIf { it.isNotBlank() }?.let { builder.header("Authorization", "Bearer $it") }
 
         if (method != "GET") {
@@ -158,7 +164,7 @@ class SupabaseClient(
             builder.method(method, requestBody)
         }
 
-        execute(builder.build(), supabaseAuth)
+        execute(builder.build(), ::supabaseFailureMessage)
     }
 
     private suspend fun sendBytes(url: String, bytes: ByteArray, contentType: String, token: String): String =
@@ -171,34 +177,36 @@ class SupabaseClient(
                 .method("POST", bytes.toRequestBody(contentType.toMediaType()))
                 .build()
 
-            execute(request, supabaseAuth = true)
+            execute(request, ::supabaseFailureMessage)
         }
 
-    private fun execute(request: Request, supabaseAuth: Boolean): String {
+    private fun execute(request: Request, failureMessage: (status: Int, body: String) -> String): String {
         http.newCall(request).execute().use { response ->
             val text = response.body?.string().orEmpty()
             if (!response.isSuccessful) {
-                throw ApiException(response.code, friendlyMessage(response.code, text, supabaseAuth))
+                throw ApiException(response.code, failureMessage(response.code, text))
             }
             return text
         }
     }
 
-    private fun friendlyMessage(status: Int, body: String, supabaseAuth: Boolean): String = when (status) {
+    private fun supabaseFailureMessage(status: Int, body: String): String =
+        statusMessage(status) ?: runCatching {
+            val error = JSONObject(body)
+            error.optString(
+                "msg",
+                error.optString("error_description", error.optString("message", "Falha na solicitação.")),
+            )
+        }.getOrDefault("Falha na solicitação ($status).")
+
+    private fun externalFailureMessage(status: Int): String =
+        statusMessage(status) ?: "Não foi possível consultar a Bíblia ($status)."
+
+    private fun statusMessage(status: Int): String? = when (status) {
         401 -> "Sua sessão expirou. Entre novamente."
         403 -> "Você não tem permissão para esta ação."
         409 -> "Este cadastro já existe."
         429 -> "Muitas tentativas. Aguarde e tente novamente."
-        else -> if (!supabaseAuth) {
-            "Não foi possível consultar a Bíblia ($status)."
-        } else {
-            runCatching {
-                val error = JSONObject(body)
-                error.optString(
-                    "msg",
-                    error.optString("error_description", error.optString("message", "Falha na solicitação.")),
-                )
-            }.getOrDefault("Falha na solicitação ($status).")
-        }
+        else -> null
     }
 }
