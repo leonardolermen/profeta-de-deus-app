@@ -25,15 +25,20 @@ cargos), tipos de foto e cultos semanais, e leitura de Storage para administrado
 
 ## Mapa de telas
 
-Início → agenda → detalhe de evento → inscrição → minhas inscrições.
+O app tem quatro abas: Início, Bíblia, Eventos e Ajustes.
 
-Bíblia → livros → capítulos → leitura → favoritos/compartilhamento.
+Início → atalhos para Oração, Projetos e Parabéns (aniversariantes); próximos eventos → detalhe de evento; "Quem
+somos" → história da igreja.
 
-Comunidade → oração, estudos → leitura/conclusão, aniversariantes, álbuns → foto, história e contatos.
+Bíblia → livros → capítulos → leitura → favoritos/compartilhamento; Estudos → leitura/conclusão.
 
-Ajustes → conta/cadastro/recuperação, perfil, tema, lembretes, privacidade e administração.
+Eventos → agenda com busca, filtros e cultos semanais → detalhe de evento → lembrete e inscrição → minhas inscrições;
+Fotos (galeria) → foto; Batismo.
 
-Administração → agenda, estudos, fotos, aniversários, informações da igreja, pedidos de oração e inscrições.
+Ajustes → conta (entrar, cadastro, recuperação de senha), perfil, tema, lembretes, Contato, Privacidade, Minhas
+inscrições e Administração (só para administradores).
+
+Administração → agenda, cultos, estudos, fotos, aniversários, informações da igreja, pedidos de oração e inscrições.
 
 ## Decisões
 
@@ -41,4 +46,4 @@ Android é a plataforma de destino. Layouts TypeScript/React foram reescritos em
 
 O banco guarda apenas dia e mês de aniversário e exige consentimento para divulgação a membros. Inscrições pertencem a uma conta e não podem ser lidas por outros membros. Administradores são promovidos pelo operador do banco, nunca pelo aplicativo.
 
-Fotos (enviadas pelo app ao Storage) e textos precisam ser publicados pela igreja. Não foram inventados contatos nem inseridos cadastros de demonstração. A documentação em `android-native/README.md` lista configuração e testes manuais com o backend real.
+Fotos (enviadas pelo app ao Storage) e textos precisam ser publicados pela igreja. Não foram inventados contatos nem inseridos cadastros de demonstração no app ou nas migrações; só `supabase/seed.sql` insere dados de exemplo, e apenas no ambiente local. A documentação em `android-native/README.md` lista configuração e testes manuais com o backend real.

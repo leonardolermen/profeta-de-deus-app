@@ -64,7 +64,7 @@ O administrador gerencia o conteúdo e os cadastros disponíveis no painel. Alte
 1. Encontre `app/build/outputs/apk/debug/app-debug.apk`, dentro desta pasta `android-native`.
 2. Copie o APK para um celular Android 8 ou superior e abra o arquivo. Se o Android solicitar, permita a instalação por esse aplicativo de arquivos.
 3. Abra **Profetas de Deus**. Se houver conflito com uma versão instalada, prefira um emulador ou outro aparelho de teste; não desinstale uma versão com dados importantes sem preservar esses dados.
-4. Navegue pelas abas Início, Bíblia, Agenda, Comunidade e Ajustes. Confirme que o aplicativo abre e que é possível avançar e voltar entre as telas.
+4. Navegue pelas abas Início, Bíblia, Eventos e Ajustes. Confirme que o aplicativo abre e que é possível avançar e voltar entre as telas.
 5. Em Ajustes, altere o tema, feche e abra o app novamente. A escolha deve ser preservada.
 6. Com internet, abra Bíblia, escolha um livro e um capítulo e confira a leitura. Favorite um versículo, abra Favoritos, feche e reabra o app e confira a persistência. Teste Compartilhar.
 7. Desative a internet, tente carregar um capítulo diferente e confira se aparece um erro com opção de tentar novamente. Reative a rede e repita.
@@ -100,6 +100,7 @@ Esses comandos não executam as telas em um dispositivo nem comprovam os fluxos 
 1. Use Android Studio compatível com AGP 8.11.1, JDK 17 ou 21, SDK Android 36 e Build Tools 35.0.0. O Gradle Wrapper baixa o Gradle 8.13.
 2. Copie `local.properties.example` para `local.properties`. Informe `sdk.dir`, `SUPABASE_URL` e `SUPABASE_ANON_KEY` (chave pública/anon; nunca `service_role`). As mesmas duas variáveis também podem ser fornecidas no ambiente de build. Para o Supabase local no emulador, use `http://10.0.2.2:54321` e a chave anon que `npx supabase status` imprime. O build não lê nenhum `.env`.
 3. Em um projeto Supabase novo, aplique todas as migrações de `../supabase/migrations/` em ordem de nome (`npx supabase db push`, ou pelo SQL Editor). Em um banco existente, confira quais já foram aplicadas e faça backup antes. Nada é aplicado automaticamente pelo build.
+   - `20261023000100_fotos_tipos_cultos.sql` remove a constraint `fotos_url_check` pelo nome que o Postgres gerou para ela em `20261021000100`. Num banco de produção criado de outro jeito (por exemplo, pelo script legado), o nome pode ser outro e a migração falha: confira antes com `\d public.fotos`. As migrações existentes não são editadas; se o nome divergir, ajuste o banco antes de aplicar.
 4. Não execute `docs/supabase_setup.sql`: é o script legado com permissões divergentes. A nova migração substitui as políticas de orações e restringe atualizações de cargo.
 5. Crie uma conta pelo app. Para promover a primeira conta, execute no SQL Editor, com o UUID correto: `update public.perfis set role='admin' where id='UUID-DO-USUARIO';`. A aplicação não pode promover usuários.
 6. No Supabase Auth > URL Configuration, autorize `profetas://auth/recovery` nos Redirect URLs. Mantenha o template de recuperação usando o link de confirmação do Supabase. Abra o e-mail no Android para retornar ao perfil e trocar a senha. Confirmação de cadastro depende da configuração de e-mail do projeto; configure Site URL e SMTP conforme o ambiente.
