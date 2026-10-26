@@ -18,7 +18,15 @@ data class ChurchState(
     val loading: Boolean = false,
     val failure: String? = null,
     val church: Church = Church(),
-)
+) {
+    // Durante a carga, "ainda não foi publicada" seria um vazio falso: o texto fica em branco até a resposta chegar.
+    val historyPreview: String
+        get() = when {
+            church.history.isNotBlank() -> church.history
+            loading -> ""
+            else -> "A história da comunidade ainda não foi publicada."
+        }
+}
 
 class ChurchViewModel(private val churches: ChurchRepository) : ViewModel() {
 

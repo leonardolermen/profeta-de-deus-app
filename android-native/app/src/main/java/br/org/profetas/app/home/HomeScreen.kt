@@ -82,7 +82,7 @@ fun HomeScreen(
             SectionUnderline()
 
             Paragraph(
-                text = churchState.church.history.ifBlank { "A história da comunidade ainda não foi publicada." },
+                text = churchState.historyPreview,
                 maxLines = 7,
             )
 
