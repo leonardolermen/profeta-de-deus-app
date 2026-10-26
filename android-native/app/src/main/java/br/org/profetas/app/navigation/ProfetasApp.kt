@@ -20,7 +20,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import br.org.profetas.app.AppContainer
-import br.org.profetas.app.AppViewModel
 import br.org.profetas.app.account.AccountEvent
 import br.org.profetas.app.account.AccountViewModel
 import br.org.profetas.app.admin.AdminViewModel
@@ -32,6 +31,7 @@ import br.org.profetas.app.event.EventsViewModel
 import br.org.profetas.app.gallery.GalleryViewModel
 import br.org.profetas.app.home.HomeScreen
 import br.org.profetas.app.prayer.PrayerViewModel
+import br.org.profetas.app.settings.SettingsViewModel
 import br.org.profetas.app.study.StudiesViewModel
 import br.org.profetas.app.theme.ProfetasTheme
 
@@ -41,7 +41,6 @@ private class VisibleScreen(val reload: () -> Unit, val isBusy: Boolean)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: String?) {
-    val appViewModel: AppViewModel = viewModel()
     val eventsViewModel: EventsViewModel = viewModel(factory = EventsViewModel.Factory)
     val churchViewModel: ChurchViewModel = viewModel(factory = ChurchViewModel.Factory)
     val bibleViewModel: BibleViewModel = viewModel(factory = BibleViewModel.Factory)
@@ -51,8 +50,8 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
     val birthdaysViewModel: BirthdaysViewModel = viewModel(factory = BirthdaysViewModel.Factory)
     val galleryViewModel: GalleryViewModel = viewModel(factory = GalleryViewModel.Factory)
     val adminViewModel: AdminViewModel = viewModel(factory = AdminViewModel.Factory)
+    val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
 
-    val appState by appViewModel.state.collectAsStateWithLifecycle()
     val eventsState by eventsViewModel.state.collectAsStateWithLifecycle()
     val churchState by churchViewModel.state.collectAsStateWithLifecycle()
     val bibleState by bibleViewModel.state.collectAsStateWithLifecycle()
@@ -61,7 +60,7 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
     val galleryState by galleryViewModel.state.collectAsStateWithLifecycle()
     val adminState by adminViewModel.state.collectAsStateWithLifecycle()
     val profile by container.account.currentProfile.collectAsStateWithLifecycle()
-    val isLoggedIn by container.account.isLoggedIn.collectAsStateWithLifecycle()
+    val isDark by settingsViewModel.isDark.collectAsStateWithLifecycle()
 
     val navController = rememberNavController()
     val navigator = remember(navController) { Navigator(navController) }
@@ -71,13 +70,6 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
     val visible = backStackEntry?.destination?.route?.let(Route::fromPath) ?: Route.Home
 
     val snackbarHost = remember { SnackbarHostState() }
-
-    LaunchedEffect(appState.message) {
-        appState.message?.let { message ->
-            snackbarHost.showSnackbar(message)
-            appViewModel.dismissMessage()
-        }
-    }
 
     LaunchedEffect(Unit) {
         container.userMessages.messages.collect { message ->
@@ -99,13 +91,6 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
 
     LaunchedEffect(recoveryLink) {
         recoveryLink?.let(accountViewModel::acceptRecovery)
-    }
-
-    // Os Ajustes ainda leem a conta do AppViewModel (até a Task 15): entrar, sair ou trocar o nome precisa
-    // recarregá-lo. O nome entra na chave porque reload() refaz o perfil sem mudá-lo, então não gira em laço.
-    val accountName = profile?.name
-    LaunchedEffect(isLoggedIn, accountName) {
-        appViewModel.reload()
     }
 
     val screen = when (visible) {
@@ -137,10 +122,17 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
         Route.Admin, is Route.EventEditor, is Route.WeeklyServiceEditor, is Route.StudyEditor, is Route.PhotoEditor,
         is Route.BirthdayEditor, Route.ChurchEditor ->
             VisibleScreen(reload = adminViewModel::reload, isBusy = adminState.loading)
-        else -> VisibleScreen(reload = appViewModel::reload, isBusy = appState.loading || appState.saving)
+        Route.Settings -> VisibleScreen(
+            reload = {
+                settingsViewModel.reload()
+                accountViewModel.loadProfile()
+            },
+            isBusy = false,
+        )
+        else -> VisibleScreen(reload = {}, isBusy = false)
     }
 
-    ProfetasTheme(isDark = appState.dark) {
+    ProfetasTheme(isDark = isDark) {
         Scaffold(
             topBar = {
                 if (visible !in Route.tabs) {
@@ -203,7 +195,7 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
 
                     adminDestinations(container, adminViewModel, accountViewModel, navigator)
 
-                    legacyDestinations(appViewModel, navigator)
+                    settingsDestinations(settingsViewModel, accountViewModel, navigator)
                 }
             }
         }

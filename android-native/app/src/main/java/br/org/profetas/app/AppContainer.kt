@@ -13,6 +13,7 @@ import br.org.profetas.app.event.reminder.ReminderScheduler
 import br.org.profetas.app.event.weekly.WeeklyServiceRepository
 import br.org.profetas.app.gallery.GalleryRepository
 import br.org.profetas.app.prayer.PrayerRepository
+import br.org.profetas.app.settings.ThemePreference
 import br.org.profetas.app.study.CompletedStudies
 import br.org.profetas.app.study.StudyRepository
 import br.org.profetas.app.support.http.SupabaseClient
@@ -64,6 +65,8 @@ class AppContainer(context: Context) {
     private val preferences = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
 
     val reminders = ReminderScheduler(context, preferences)
+
+    val theme = ThemePreference(preferences)
 
     // Sem login, o que se marca fica sob "visitante", como no app antigo.
     private val accountKey = { client.session?.userId ?: "visitante" }

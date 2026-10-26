@@ -28,13 +28,6 @@ class Navigator(private val navController: NavController) {
         }
     }
 
-    // As telas antigas de ui/ ainda navegam por string; "auth" era a tela única de conta, hoje Route.Login.
-    fun goLegacyPath(path: String) {
-        val route = if (path == "auth") Route.Login else Route.fromPath(path)
-
-        route?.let(::go)
-    }
-
     // Trocar de aba volta para a raiz e guarda a pilha da aba que sai, como a barra de abas do Expo.
     private fun goToTab(tab: Route) {
         navController.navigate(tab.path) {
