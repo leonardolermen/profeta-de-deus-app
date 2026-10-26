@@ -129,7 +129,9 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
             },
             isBusy = false,
         )
-        else -> VisibleScreen(reload = {}, isBusy = false)
+        // Formulários sem lista remota para atualizar: o que digitar é enviado, não carregado. Sem `else` de propósito,
+        // para o compilador exigir uma decisão explícita a cada rota nova.
+        Route.Prayer, Route.Login, Route.Register, Route.Recovery -> VisibleScreen(reload = {}, isBusy = false)
     }
 
     ProfetasTheme(isDark = isDark) {
