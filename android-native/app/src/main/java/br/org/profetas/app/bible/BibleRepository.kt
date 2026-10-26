@@ -10,15 +10,15 @@ private const val BIBLE_API = "https://abibliadigital.api.br/api/"
 class BibleRepository(
     private val client: SupabaseClient,
     private val token: String = BuildConfig.BIBLE_API_TOKEN,
-) {
+) : BibleSource {
 
-    suspend fun books(): List<Book> {
+    override suspend fun books(): List<Book> {
         val array = JSONArray(request("books"))
 
         return (0 until array.length()).map { index -> array.getJSONObject(index).toBook() }
     }
 
-    suspend fun chapter(book: Book, number: Int): Chapter {
+    override suspend fun chapter(book: Book, number: Int): Chapter {
         val json = JSONObject(request("verses/nvi/${book.abbreviation}/$number"))
         val verses = json.getJSONArray("verses")
 

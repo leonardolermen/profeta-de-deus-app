@@ -28,7 +28,7 @@ data class BibleState(
     val isBusy: Boolean get() = isLoadingBooks || isLoadingChapter
 }
 
-class BibleViewModel(private val bible: BibleRepository, private val favorites: FavoriteVerses) : ViewModel() {
+class BibleViewModel(private val bible: BibleSource, private val favorites: FavoriteVerses) : ViewModel() {
 
     private val mutableState = MutableStateFlow(BibleState(favorites = favorites.all()))
 
