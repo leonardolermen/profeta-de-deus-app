@@ -88,7 +88,7 @@ No terminal, dentro de `android-native`, com JDK e SDK configurados:
 .\gradlew.bat :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
 
-Resultados esperados: `BUILD SUCCESSFUL`, nove testes sem falhas e relatório de lint sem erros. Os relatórios ficam em:
+Resultados esperados: `BUILD SUCCESSFUL`, todos os testes JUnit sem falhas e relatório de lint sem erros. Os relatórios ficam em:
 
 - `app/build/reports/tests/testDebugUnitTest/index.html`
 - `app/build/reports/lint-results-debug.html`
