@@ -34,7 +34,14 @@ fun PhotoEditor(photoId: String, viewModel: AdminViewModel, storageBaseUrl: Stri
         .distinct()
         .sorted()
 
-    EditorRecord(id = photoId, records = state.photos, recordId = Photo::id, hasLoaded = state.hasLoaded) { photo ->
+    EditorRecord(
+        id = photoId,
+        records = state.photos,
+        recordId = Photo::id,
+        hasLoaded = state.hasLoaded,
+        failure = state.failure,
+        onRetry = viewModel::reload,
+    ) { photo ->
         PhotoFields(
             photo = photo,
             albums = albums,

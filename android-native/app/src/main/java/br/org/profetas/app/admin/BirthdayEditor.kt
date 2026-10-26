@@ -34,6 +34,8 @@ fun BirthdayEditor(birthdayId: String, viewModel: AdminViewModel, onSaved: () ->
         records = state.birthdays,
         recordId = Birthday::id,
         hasLoaded = state.hasLoaded,
+        failure = state.failure,
+        onRetry = viewModel::reload,
     ) { birthday ->
         BirthdayFields(
             birthday = birthday,

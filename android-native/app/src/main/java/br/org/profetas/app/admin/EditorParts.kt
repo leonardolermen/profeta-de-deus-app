@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.org.profetas.app.navigation.Route
 import br.org.profetas.app.support.ui.EmptyState
+import br.org.profetas.app.support.ui.LoadFailure
 
 // Peças comuns aos editores da Administração: mesma coluna, mesmo cabeçalho e o mesmo botão de salvar.
 
@@ -60,13 +61,16 @@ fun EditorColumn(isNew: Boolean, content: @Composable ColumnScope.() -> Unit) {
 }
 
 // O registro aberto vem da lista recarregada do AdminViewModel. Aberto direto (link de debug), a lista ainda está
-// vazia: espera a carga em vez de dizer que o registro não existe.
+// vazia: espera a carga em vez de dizer que o registro não existe. Se a carga falhou, oferece tentar de novo em vez
+// de girar para sempre.
 @Composable
 fun <T> EditorRecord(
     id: String,
     records: List<T>,
     recordId: (T) -> String,
     hasLoaded: Boolean,
+    failure: String?,
+    onRetry: () -> Unit,
     content: @Composable (T?) -> Unit,
 ) {
     if (id == Route.NEW_RECORD) {
@@ -80,6 +84,10 @@ fun <T> EditorRecord(
     if (record != null) {
         key(id) {
             content(record)
+        }
+    } else if (!hasLoaded && failure != null) {
+        Box(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+            LoadFailure(message = failure, onRetry = onRetry)
         }
     } else if (!hasLoaded) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

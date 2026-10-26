@@ -47,6 +47,12 @@ class AccountViewModel(private val account: AccountRepository, private val messa
 
     val profile: StateFlow<Profile?> get() = account.currentProfile
 
+    private val mutableProfileFailure = MutableStateFlow<String?>(null)
+
+    // A administração depende do perfil: a falha precisa durar como estado (para oferecer "Tentar novamente"), não
+    // só passar pelo snackbar.
+    val profileFailure: StateFlow<String?> = mutableProfileFailure.asStateFlow()
+
     val email: String get() = account.session?.email.orEmpty()
 
     fun login(email: String, password: String) {
@@ -117,6 +123,8 @@ class AccountViewModel(private val account: AccountRepository, private val messa
 
     // O perfil só existe depois de account.profile(): quem abre a tela do perfil pede que seja carregado.
     fun loadProfile() {
+        mutableProfileFailure.value = null
+
         viewModelScope.launch {
             try {
                 account.profile()
@@ -125,7 +133,9 @@ class AccountViewModel(private val account: AccountRepository, private val messa
                     throw e
                 }
 
-                messages.show(e.message ?: FAILURE_MESSAGE)
+                val message = e.message ?: FAILURE_MESSAGE
+                mutableProfileFailure.value = message
+                messages.show(message)
             }
         }
     }

@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import br.org.profetas.app.AppContainer
 import br.org.profetas.app.account.AccountViewModel
 import br.org.profetas.app.account.ContentAccess
+import br.org.profetas.app.admin.AdminAccess
 import br.org.profetas.app.admin.AdminGate
 import br.org.profetas.app.admin.AdminScreen
 import br.org.profetas.app.admin.AdminViewModel
@@ -69,12 +70,14 @@ private fun NavGraphBuilder.admin(
 ) {
     composable(pattern) { entry ->
         val profile by container.account.currentProfile.collectAsStateWithLifecycle()
-        val isLoggedIn by container.account.isLoggedIn.collectAsStateWithLifecycle()
+        val accountId by container.account.accountId.collectAsStateWithLifecycle()
+        val profileFailure by accountViewModel.profileFailure.collectAsStateWithLifecycle()
         val isAdmin = ContentAccess.canManage(profile)
 
         // O perfil só existe depois de carregado; aberta direto, a tela pede a carga em vez de recusar o acesso.
-        LaunchedEffect(isLoggedIn) {
-            if (isLoggedIn && profile == null) {
+        // Chave pela conta: na troca A→B pelo link de recuperação isLoggedIn não muda, mas o perfil de B falta.
+        LaunchedEffect(accountId) {
+            if (accountId != null && profile == null) {
                 accountViewModel.loadProfile()
             }
         }
@@ -85,7 +88,10 @@ private fun NavGraphBuilder.admin(
             }
         }
 
-        AdminGate(profile = profile, isLoggedIn = isLoggedIn) {
+        AdminGate(
+            access = AdminAccess.of(profile, accountId, profileFailure),
+            onRetry = accountViewModel::loadProfile,
+        ) {
             content(entry)
         }
     }

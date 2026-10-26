@@ -22,7 +22,14 @@ fun EventEditor(eventId: String, viewModel: AdminViewModel, storageBaseUrl: Stri
 
     SavedEffect(viewModel, onSaved)
 
-    EditorRecord(id = eventId, records = state.events, recordId = Event::id, hasLoaded = state.hasLoaded) { event ->
+    EditorRecord(
+        id = eventId,
+        records = state.events,
+        recordId = Event::id,
+        hasLoaded = state.hasLoaded,
+        failure = state.failure,
+        onRetry = viewModel::reload,
+    ) { event ->
         EventFields(
             event = event,
             isSaving = state.saving,

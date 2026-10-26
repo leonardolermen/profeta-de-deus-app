@@ -30,6 +30,8 @@ fun WeeklyServiceEditor(serviceId: String, viewModel: AdminViewModel, onSaved: (
         records = state.weeklyServices,
         recordId = WeeklyService::id,
         hasLoaded = state.hasLoaded,
+        failure = state.failure,
+        onRetry = viewModel::reload,
     ) { service ->
         WeeklyServiceFields(
             service = service,

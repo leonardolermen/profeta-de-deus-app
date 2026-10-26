@@ -21,7 +21,14 @@ fun StudyEditor(studyId: String, viewModel: AdminViewModel, onSaved: () -> Unit)
 
     SavedEffect(viewModel, onSaved)
 
-    EditorRecord(id = studyId, records = state.studies, recordId = Study::id, hasLoaded = state.hasLoaded) { study ->
+    EditorRecord(
+        id = studyId,
+        records = state.studies,
+        recordId = Study::id,
+        hasLoaded = state.hasLoaded,
+        failure = state.failure,
+        onRetry = viewModel::reload,
+    ) { study ->
         StudyFields(
             study = study,
             isSaving = state.saving,

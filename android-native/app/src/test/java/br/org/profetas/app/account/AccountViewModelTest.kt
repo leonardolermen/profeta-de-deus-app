@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -17,6 +18,8 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -28,6 +31,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.ConcurrentLinkedQueue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccountViewModelTest {
@@ -53,6 +57,8 @@ class AccountViewModelTest {
 
     private val requestedPaths = mutableListOf<String>()
 
+    private val profileResponses = ConcurrentLinkedQueue<MockResponse>()
+
     @Before fun startServer() {
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
@@ -60,8 +66,8 @@ class AccountViewModelTest {
 
                 return when {
                     request.path.orEmpty().startsWith("/auth/v1/logout") -> MockResponse().setResponseCode(500)
-                    request.path.orEmpty().startsWith("/rest/v1/perfis") ->
-                        MockResponse().setBody("""[{"id":"member-id","nome":"Maria","role":"member"}]""")
+                    request.path.orEmpty().startsWith("/rest/v1/perfis") -> profileResponses.poll()
+                        ?: MockResponse().setBody("""[{"id":"member-id","nome":"Maria","role":"member"}]""")
                     else -> MockResponse().setResponseCode(404)
                 }
             }
@@ -114,4 +120,29 @@ class AccountViewModelTest {
         assertEquals("Informe um e-mail válido.", message.await())
         assertEquals(emptyList<String>(), requestedPaths)
     }
+
+    // A administração depende do perfil: uma falha ao carregá-lo precisa virar estado, não só um aviso passageiro,
+    // para a tela oferecer "Tentar novamente" em vez de girar para sempre.
+    @Test fun failedProfileLoadIsExposedAndClearedByASuccessfulRetry() = runTest {
+        val viewModel = AccountViewModel(account(backgroundScope), userMessages)
+        profileResponses.add(MockResponse().setResponseCode(500))
+
+        viewModel.loadProfile()
+        val failure = awaitValue(viewModel.profileFailure) { current -> current != null }
+
+        assertEquals("Falha na solicitação (500).", failure)
+
+        viewModel.loadProfile()
+        awaitValue(viewModel.profile) { current -> current != null }
+
+        assertNull(viewModel.profileFailure.value)
+    }
+
+    // A rede do MockWebServer roda em threads reais: o tempo virtual do runTest não espera por ela.
+    private suspend fun <T> awaitValue(flow: StateFlow<T>, predicate: (T) -> Boolean): T =
+        withContext(Dispatchers.Default) {
+            withTimeout(5_000L) {
+                flow.first(predicate)
+            }
+        }
 }

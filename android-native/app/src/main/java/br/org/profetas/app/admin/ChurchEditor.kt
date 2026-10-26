@@ -2,6 +2,7 @@ package br.org.profetas.app.admin
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -14,10 +15,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.org.profetas.app.church.Church
 import br.org.profetas.app.support.ui.AppTextArea
 import br.org.profetas.app.support.ui.AppTextField
+import br.org.profetas.app.support.ui.LoadFailure
 
 private const val MAX_SHORT_INPUT = 1000
 private const val MAX_LONG_INPUT = 50000
@@ -29,6 +32,15 @@ fun ChurchEditor(viewModel: AdminViewModel, onSaved: () -> Unit) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     SavedEffect(viewModel, onSaved)
+
+    val failure = state.failure
+    if (!state.hasLoaded && failure != null) {
+        Box(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+            LoadFailure(message = failure, onRetry = viewModel::reload)
+        }
+
+        return
+    }
 
     if (!state.hasLoaded) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

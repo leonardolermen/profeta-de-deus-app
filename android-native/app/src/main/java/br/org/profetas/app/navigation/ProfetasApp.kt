@@ -120,8 +120,17 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
         Route.History, Route.Contact, Route.Privacy ->
             VisibleScreen(reload = churchViewModel::reload, isBusy = churchState.loading)
         Route.Admin, is Route.EventEditor, is Route.WeeklyServiceEditor, is Route.StudyEditor, is Route.PhotoEditor,
-        is Route.BirthdayEditor, Route.ChurchEditor ->
-            VisibleScreen(reload = adminViewModel::reload, isBusy = adminState.loading)
+        is Route.BirthdayEditor, Route.ChurchEditor -> VisibleScreen(
+            reload = {
+                // Sem perfil a administração nem abre: atualizar também refaz a carga dele, que pode ter falhado.
+                if (profile == null) {
+                    accountViewModel.loadProfile()
+                }
+
+                adminViewModel.reload()
+            },
+            isBusy = adminState.loading,
+        )
         Route.Settings -> VisibleScreen(
             reload = {
                 settingsViewModel.reload()
