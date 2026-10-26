@@ -1,50 +1,57 @@
-# Welcome to your Expo app 👋
+# Profetas de Deus
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo Android da igreja Profetas de Deus: agenda de eventos e batismos, Bíblia, estudos, galeria de fotos,
+aniversariantes, pedidos de oração, inscrições, contatos e uma área de administração do conteúdo. O app é nativo
+(Kotlin + Jetpack Compose) e usa o Supabase como backend (Auth, Postgres com RLS e Storage).
 
-## Get started
+O aplicativo Expo/React Native que existia antes foi removido depois da conversão. As capturas de tela dele
+sobrevivem em `docs/referencia-visual/expo/` como referência visual.
 
-1. Install dependencies
+## Estrutura
 
-   ```bash
-   npm install
-   ```
+| Pasta | Conteúdo |
+|---|---|
+| `android-native/` | O aplicativo Android. Tem o próprio `README.md` com modos de acesso, configuração e roteiro de testes |
+| `supabase/` | Migrações, `seed.sql` e testes pgTAP do banco; `config.toml` do ambiente local |
+| `docs/` | Validação, migração, referência visual e documentos históricos do plano antigo |
 
-2. Start the app
+## Compilar o app Android
 
-   ```bash
-    npx expo start
-   ```
+Requisitos: Android Studio com AGP 8.11.1, JDK 17 ou 21, SDK Android 36 e Build Tools 35.0.0. O Gradle Wrapper baixa
+o Gradle 8.13. O caminho do SDK é configuração de cada máquina (`sdk.dir` em `android-native/local.properties`), não
+um requisito do projeto.
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```powershell
+cd android-native
+copy local.properties.example local.properties   # preencha sdk.dir, SUPABASE_URL e SUPABASE_ANON_KEY
+.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+O APK debug sai em `android-native/app/build/outputs/apk/debug/app-debug.apk`. Nunca coloque a chave `service_role`
+no app: só a chave pública (anon).
 
-## Learn more
+## Backend local (Supabase)
 
-To learn more about developing your project with Expo, look at the following resources:
+Precisa de Docker. O Supabase CLI roda por `npx`, sem `package.json` neste repositório.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```powershell
+npx supabase start       # sobe o stack local; imprime a URL e a chave anon para o local.properties
+npx supabase db reset    # recria o banco: aplica as migrações e o seed
+npx supabase test db     # roda os testes pgTAP de supabase/tests/
+npx supabase stop
+```
 
-## Join the community
+No emulador Android, a URL do host é `http://10.0.2.2:54321`.
 
-Join our community of developers creating universal apps.
+O `supabase/seed.sql` existe só para o ambiente local: cria as contas `admin@local.test` e `membro@local.test` e dados
+de exemplo. Ele não deve ser aplicado em produção.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Documentação
+
+- `android-native/README.md`: situação, pendências, modos de acesso, configuração e testes manuais.
+- `docs/VALIDACAO_ANDROID.md`: o que foi executado e o resultado, incluindo a validação de 26/10/2026 no Supabase local.
+- `docs/MIGRACAO_ANDROID.md`: organização do código Kotlin e decisões da conversão.
+- `docs/03_TAREFAS.md`: o que está feito e o que falta.
+- `docs/referencia-visual/`: capturas das telas do app Expo (`expo/`) e do app Kotlin (`kotlin/`).
+- `docs/01_INTEGRACAO_BACKEND.md`, `docs/02_USER_STORIES.md`, `docs/supabase_setup.sql`: material histórico do plano
+  Expo + API própria. Não descrevem o estado atual.

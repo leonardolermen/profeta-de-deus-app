@@ -82,11 +82,11 @@ As permissões foram reforçadas no código de acesso a dados e nas telas; os te
 
 ## Observações (não bloqueiam)
 
- Mensagem de rede em inglês cru na Bíblia e telas de administração sem tratamento de falha na primeira carga: pendências já registradas das revisões, não corrigidas aqui.
+- Mensagem de rede em inglês cru na Bíblia e telas de administração sem tratamento de falha na primeira carga: pendências já registradas das revisões, não corrigidas aqui.
 - O texto da tela de cadastro ainda diz "eventos e dízimos", herdado do Expo; dízimos estão fora do escopo da versão.
 - O logo da Início tem fundo branco no tema escuro (mesmo recurso do Expo).
 - Dados de teste permanecem no banco local (eventos "Vigilia_Validacao" e "Lembrete_Teste", estudo, foto, aniversariante, conta `novo@local.test`); `npx supabase db reset` devolve ao estado do seed.
-- `docs/referencia-visual/kotlin/`: as 15 capturas já existem, nenhuma foi acrescentada.
+- `docs/referencia-visual/kotlin/`: as capturas das telas já existiam; só `inicio-escuro.png` (tema escuro, item E1) foi acrescentada.
 
 ## Pendências
 

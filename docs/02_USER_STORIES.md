@@ -1,3 +1,5 @@
+> **Documento histórico** do plano Expo + API própria. A implementação atual usa Supabase e Android nativo (Kotlin); veja o `README.md` da raiz e `docs/MIGRACAO_ANDROID.md`. O conteúdo abaixo foi preservado como registro e não descreve o estado real.
+
 # User Stories (US)
 
 Este documento detalha as Histórias de Usuário (User Stories) necessárias para a integração e construção do Back-end. Elas seguem o padrão: *Como [ator], eu quero [ação] para que [motivo]*.

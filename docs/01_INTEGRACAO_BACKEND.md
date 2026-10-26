@@ -1,3 +1,5 @@
+> **Documento histórico** do plano Expo + API própria. A implementação atual usa Supabase e Android nativo (Kotlin); veja o `README.md` da raiz e `docs/MIGRACAO_ANDROID.md`. O conteúdo abaixo foi preservado como registro e não descreve o estado real.
+
 # Plano de Integração com o Backend
 
 Este documento descreve a visão geral de como o aplicativo (front-end) se conectará ao futuro Back-end (API) para tornar os dados dinâmicos e persistir as informações geradas pelos usuários.
