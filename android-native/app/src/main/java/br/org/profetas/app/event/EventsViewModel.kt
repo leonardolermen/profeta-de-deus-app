@@ -156,12 +156,6 @@ class EventsViewModel(
         refreshReminders()
     }
 
-    fun removeAllReminders() {
-        reminders.enabledIds().forEach(reminders::cancel)
-
-        refreshReminders()
-    }
-
     private fun save(success: String, block: suspend () -> Unit) {
         if (state.value.isSaving) {
             return
