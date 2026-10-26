@@ -1,5 +1,6 @@
 package br.org.profetas.app.admin
 
+import br.org.profetas.app.support.http.ApiException
 import br.org.profetas.app.support.storage.PhotoStorage
 import br.org.profetas.app.support.storage.StorageBucket
 import kotlinx.coroutines.CancellationException
@@ -14,9 +15,12 @@ class PhotoUploadException(cause: IOException) :
 class StoredPhotoChange(private val storage: PhotoStorage, private val bucket: StorageBucket) {
 
     // Ordem obrigatória: envia a foto nova, grava o registro apontando para ela e só então apaga a antiga. Se o
-    // envio ou a gravação falham no meio, o registro continua apontando para a foto antiga, que ainda existe; o
-    // arquivo novo, que nenhum registro referencia, é apagado para não ficar órfão no bucket. Apagar a antiga antes
-    // de gravar deixaria o evento apontando para um arquivo que não existe mais.
+    // envio falha, nada mudou. Se a gravação é recusada pelo servidor (resposta não 2xx), o registro continua na foto
+    // antiga, que ainda existe, e o arquivo novo, que nenhum registro referencia, é apagado para não ficar órfão.
+    // Sem resposta (timeout, conexão caída) o resultado é desconhecido: o PATCH pode ter chegado ao banco, e apagar o
+    // arquivo novo deixaria o card público apontando para uma imagem que não existe. Errar para esse lado custa só
+    // um arquivo órfão no bucket, por isso ele fica. Apagar a antiga antes de gravar deixaria o evento apontando
+    // para um arquivo que não existe mais.
     suspend fun save(currentPath: String?, photo: PhotoIntent, write: suspend (path: String?) -> Unit) {
         when (photo) {
             PhotoIntent.Keep -> write(currentPath)
@@ -62,7 +66,7 @@ class StoredPhotoChange(private val storage: PhotoStorage, private val bucket: S
     private suspend fun writeOrDiscard(newPath: String, write: suspend (path: String?) -> Unit) {
         try {
             write(newPath)
-        } catch (e: Exception) {
+        } catch (e: ApiException) {
             discard(newPath)
 
             throw e

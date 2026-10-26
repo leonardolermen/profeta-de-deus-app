@@ -4,6 +4,7 @@ import android.net.Uri
 import br.org.profetas.app.event.EventDraft
 import br.org.profetas.app.event.EventType
 import br.org.profetas.app.event.EventWriter
+import br.org.profetas.app.support.http.ApiException
 import br.org.profetas.app.support.storage.PhotoStorage
 import br.org.profetas.app.support.storage.StorageBucket
 import kotlinx.coroutines.test.runTest
@@ -68,14 +69,26 @@ class EventPhotoReplacementTest {
 
     @Test fun failedSaveRemovesNewUploadAndKeepsOld() = runTest {
         val calls = mutableListOf<String>()
-        val events = RecordingEvents(calls, failure = IOException("sem rede"))
+        val events = RecordingEvents(calls, failure = ApiException(400, "Falha na solicitação."))
+        val change = EventPhotoChange(RecordingStorage(calls), events)
+
+        val thrown = runCatching { change.save("1", draft, PhotoIntent.Replace(picked)) }.exceptionOrNull()
+
+        assertTrue(thrown is ApiException)
+        assertEquals(listOf("upload", "save", "remove:new.jpg"), calls)
+    }
+
+    // Sem resposta, o PATCH pode ter chegado ao banco: apagar o arquivo novo deixaria o evento apontando para nada.
+    @Test fun failedSaveWithUnknownOutcomeKeepsNewUpload() = runTest {
+        val calls = mutableListOf<String>()
+        val events = RecordingEvents(calls, failure = IOException("timeout"))
         val change = EventPhotoChange(RecordingStorage(calls), events)
 
         val thrown = runCatching { change.save("1", draft, PhotoIntent.Replace(picked)) }.exceptionOrNull()
 
         assertTrue(thrown is IOException)
-        assertEquals("sem rede", thrown?.message)
-        assertEquals(listOf("upload", "save", "remove:new.jpg"), calls)
+        assertEquals("timeout", thrown?.message)
+        assertEquals(listOf("upload", "save"), calls)
     }
 
     @Test fun removePhotoClearsPathThenDeletes() = runTest {
