@@ -19,6 +19,7 @@ import br.org.profetas.app.support.message.UserMessages
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -49,6 +50,7 @@ class AdminViewModel(
     private val eventPhotos: EventPhotoChange,
     private val galleryPhotos: GalleryPhotoChange,
     private val messages: UserMessages,
+    isLoggedIn: Flow<Boolean>,
 ) : ViewModel() {
 
     private val mutableState = MutableStateFlow(AdminState())
@@ -65,6 +67,20 @@ class AdminViewModel(
     val saved: SharedFlow<Unit> = savedEvents.asSharedFlow()
 
     private var loadJob: Job? = null
+
+    // Este ViewModel vive o processo inteiro, mais que a sessão: sem zerar o estado ao sair, o próximo admin a entrar
+    // veria as listas do anterior (pedidos de oração e inscrições são privados) até recarregar, já que
+    // loadIfEmpty() só olha hasLoaded. A carga em curso é cancelada para não repovoar o estado depois do zero.
+    init {
+        viewModelScope.launch {
+            isLoggedIn.collect { loggedIn ->
+                if (!loggedIn) {
+                    loadJob?.cancel()
+                    mutableState.value = AdminState()
+                }
+            }
+        }
+    }
 
     fun loadIfEmpty() {
         if (!state.value.hasLoaded) {
@@ -248,6 +264,7 @@ class AdminViewModel(
                     eventPhotos = EventPhotoChange(container.imageUploader, container.events),
                     galleryPhotos = GalleryPhotoChange(container.imageUploader, container.gallery),
                     messages = container.userMessages,
+                    isLoggedIn = container.account.isLoggedIn,
                 )
             }
         }
