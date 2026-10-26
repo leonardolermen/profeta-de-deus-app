@@ -45,7 +45,7 @@ private class RecordingEvents(private val calls: MutableList<String>, private va
     }
 }
 
-class EventPhotoReplacementTest {
+class EventPhotoChangeTest {
 
     private val draft = EventDraft(
         title = "Culto de Santa Ceia",
