@@ -1,33 +1,49 @@
 # Migração para Android Kotlin
 
-A nova aplicação está em `android-native/`. O código Expo foi preservado na raiz como referência de conteúdo e comportamento; não é dependência da versão Android.
+A aplicação está em `android-native/`. O aplicativo Expo que a precedeu foi removido do repositório; as capturas de tela dele ficam em `docs/referencia-visual/expo/` como referência visual, e `docs/referencia-visual/kotlin/` traz as equivalentes da versão nativa.
 
 ## Organização nativa
 
-- `data/Models.kt`: modelos e regras de datas/URLs.
-- `data/Repository.kt`: acesso REST ao Supabase Auth/PostgREST e API bíblica, renovação de sessão e mensagens de falha.
-- `data/SessionStore.kt`: tokens criptografados pelo Android Keystore.
-- `AppViewModel.kt`: estado das telas, ações e preferências locais.
-- `ui/`: navegação Compose, componentes, comunidade, Bíblia, conta e administração.
-- `EventReminder.kt`: lembretes locais com revalidação do evento.
-- `supabase/migrations/20261021000100_android_features.sql`: novas tabelas, RLS, inscrições e proteção de cargos.
+O código fica em `android-native/app/src/main/java/br/org/profetas/app/`, em pacotes por conceito do domínio. Cada pacote reúne tela, ViewModel e repositório do seu conceito:
+
+- `account/`: login, cadastro, perfil, recuperação de senha e regras de acesso ao conteúdo por cargo.
+- `admin/`: painel e editores de conteúdo, caixas de entrada de orações e inscrições, escolha de fotos.
+- `baptism/`, `campaign/`, `church/`: batismo, campanhas, informações, história, privacidade e contatos da igreja.
+- `bible/`: livros, capítulos, leitura e favoritos (API A Bíblia Digital).
+- `birthday/`, `prayer/`, `study/`, `gallery/`: aniversariantes, pedidos de oração, estudos e galeria.
+- `event/`: agenda e detalhe, com sub-pacotes `registration/` (inscrições), `reminder/` (lembretes locais com
+  WorkManager, revalidando o evento) e `weekly/` (cultos semanais).
+- `home/`, `settings/`, `theme/`: início, ajustes e tema.
+- `navigation/`: rotas, barra de abas e destinos por área.
+- `support/`: o que serve a todos os conceitos: cliente HTTP do Supabase, sessão criptografada pelo Android Keystore,
+  envio de imagens ao Storage, intents externas, mensagens de erro e componentes de interface comuns.
+
+`AppContainer.kt` monta as dependências; `ProfetasApplication.kt` e `MainActivity.kt` são os pontos de entrada.
+
+O banco é definido em `supabase/migrations/`: esquema inicial, recursos do Android (inscrições, orações, proteção de
+cargos), tipos de foto e cultos semanais, e leitura de Storage para administradores.
 
 ## Mapa de telas
 
-Início → agenda → detalhe de evento → inscrição → minhas inscrições.
+O app tem quatro abas: Início, Bíblia, Eventos e Ajustes.
 
-Bíblia → livros → capítulos → leitura → favoritos/compartilhamento.
+Início → atalhos para Oração, Projetos e Parabéns (aniversariantes); próximos eventos → detalhe de evento; "Quem
+somos" → história da igreja.
 
-Comunidade → oração, estudos → leitura/conclusão, aniversariantes, álbuns → foto, história e contatos.
+Bíblia → livros → capítulos → leitura → favoritos/compartilhamento; Estudos → leitura/conclusão.
 
-Ajustes → conta/cadastro/recuperação, perfil, tema, lembretes, privacidade e administração.
+Eventos → agenda com busca, filtros e cultos semanais → detalhe de evento → lembrete e inscrição → minhas inscrições;
+Fotos (galeria) → foto; Batismo.
 
-Administração → agenda, estudos, fotos, aniversários, informações da igreja, pedidos de oração e inscrições.
+Ajustes → conta (entrar, cadastro, recuperação de senha), perfil, tema, lembretes, Contato, Privacidade, Minhas
+inscrições e Administração (só para administradores).
+
+Administração → agenda, cultos, estudos, fotos, aniversários, informações da igreja, pedidos de oração e inscrições.
 
 ## Decisões
 
-Android é a plataforma de destino. Layouts TypeScript/React foram reescritos em Compose. O Supabase existente pode ser reutilizado após revisão/aplicação das migrações; isso não transfere automaticamente as preferências locais do aplicativo Expo.
+Android é a plataforma de destino. Layouts TypeScript/React foram reescritos em Compose. O Supabase pode ser reutilizado após revisão/aplicação das migrações; isso não transfere automaticamente as preferências locais do aplicativo Expo.
 
 O banco guarda apenas dia e mês de aniversário e exige consentimento para divulgação a membros. Inscrições pertencem a uma conta e não podem ser lidas por outros membros. Administradores são promovidos pelo operador do banco, nunca pelo aplicativo.
 
-Fotos e textos precisam ser publicados pela igreja. Não foram inventados contatos nem inseridos cadastros de demonstração. A documentação em `android-native/README.md` lista configuração e testes manuais com o backend real.
+Fotos (enviadas pelo app ao Storage) e textos precisam ser publicados pela igreja. Não foram inventados contatos nem inseridos cadastros de demonstração no app ou nas migrações; só `supabase/seed.sql` insere dados de exemplo, e apenas no ambiente local. A documentação em `android-native/README.md` lista configuração e testes manuais com o backend real.

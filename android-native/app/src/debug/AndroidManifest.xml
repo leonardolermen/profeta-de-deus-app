@@ -1,0 +1,14 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:networkSecurityConfig="@xml/network_security_config">
+        <activity android:name=".MainActivity" android:exported="true">
+            <!-- Deep link só de debug para abrir qualquer rota do app a partir de fora (profetas://open/<rota>).
+                 A navegação a partir da rota é consumida por outra parte do app, não por este manifesto. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="profetas" android:host="open" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

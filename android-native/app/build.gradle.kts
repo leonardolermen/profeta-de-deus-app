@@ -30,7 +30,16 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildTypes { release { isMinifyEnabled = false } }
+    buildTypes {
+        debug {
+            // Só o build debug fala http com o Supabase local do emulador (10.0.2.2); release é só https.
+            buildConfigField("boolean", "ALLOW_LOCAL_HTTP", "true")
+        }
+        release {
+            isMinifyEnabled = false
+            buildConfigField("boolean", "ALLOW_LOCAL_HTTP", "false")
+        }
+    }
 }
 dependencies {
     implementation(platform("androidx.compose:compose-bom:2025.04.01"))
@@ -47,5 +56,14 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.work:work-runtime-ktx:2.10.1")
     implementation("androidx.core:core-ktx:1.16.0")
+    implementation("androidx.exifinterface:exifinterface:1.4.1")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+    // HandshakeCertificates/HeldCertificate: certificado https descartável para o MockWebServer dos testes
+    // (isSecureUrl exige https, então o servidor de teste precisa falar https de verdade).
+    testImplementation("com.squareup.okhttp3:okhttp-tls:4.12.0")
+    testImplementation("org.json:json:20240303")
+    // android.net.Uri é só um stub na JVM; o mock dá um Uri para entregar ao ImageReader falso.
+    testImplementation("org.mockito:mockito-core:5.14.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
 }
