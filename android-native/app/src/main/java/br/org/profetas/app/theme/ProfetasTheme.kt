@@ -33,5 +33,7 @@ fun ProfetasTheme(isDark: Boolean, content: @Composable () -> Unit) {
         )
     }
 
+    SystemBarIcons(isDark = isDark)
+
     MaterialTheme(colorScheme = colorScheme, content = content)
 }
