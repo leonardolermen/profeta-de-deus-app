@@ -30,12 +30,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // O lembrete de evento abre o app com o id no extra "event_id" (EventReminder); o deep link de debug,
+    // O lembrete de evento abre o app com o id no extra "event_id" (EventReminderWorker); o deep link de debug,
     // com profetas://open/<rota>.
     private fun initialRoute(intent: Intent, link: String?): Route? {
         val eventId = intent.getStringExtra("event_id")
         if (eventId != null) {
             return Route.EventDetail(eventId)
+        }
+
+        // O intent-filter do link de debug só existe no build debug, mas qualquer app pode mandar um intent explícito
+        // com profetas://open/... para esta Activity: no release o roteador nem é consultado.
+        if (!BuildConfig.DEBUG) {
+            return null
         }
 
         return link?.let(::routeFromDebugLink)
