@@ -1,5 +1,7 @@
 # Validação da versão Android — 21/10/2026
 
+> Superado pela seção "Validação funcional da versão Kotlin — 26/10/2026", mais abaixo: os testes em emulador e a negação de chamadas REST no banco, tratados como pendentes aqui, foram executados contra o Supabase local. O texto desta seção fica como registro do estado em 21/10.
+
 ## Verificações executadas
 
 - Compilação Kotlin/Java e empacotamento do APK debug com Gradle 8.13, AGP 8.11.1, JDK 21 e Android SDK 36.
@@ -51,7 +53,7 @@ As permissões foram reforçadas no código de acesso a dados e nas telas; os te
 | 4 | Membro: filtrar, inscrever, duplicidade, cancelar; outro membro não vê | Passou | Filtro "Culto" mostra só o evento do tipo; inscrição gravada; segunda tentativa: tela mostra "Inscrição confirmada" e a API devolve 409 (`inscricoes_evento_id_usuario_id_key`); cancelamento zera a tabela; membro do seed lê `inscricoes` de outra conta: `[]` |
 | 5 | Só admin lê orações, administra, vê inscrições de todos | Passou | Admin lê as 3 orações e a inscrição do outro usuário; membro: `[]` nas duas |
 | 6 | Bíblia, erro de rede, favoritos, estudos concluídos, persistência, separação por conta | Passou (com observação) | Gênesis 1 carregado; favorito em Gênesis 1:3 e estudo concluído sobrevivem a `force-stop`; a outra conta vê favoritos e estudos vazios. Sem rede: tela "Não foi possível carregar" com "Tentar novamente", que recupera com a rede de volta. Observação: o texto vem em inglês cru (`Unable to resolve host "abibliadigital.api.br"…`), pendência já registrada |
-| 7 | Contatos oficiais e recuperação de senha | Passou (com ressalva de ambiente) | Telefone e WhatsApp editados em Administração e refletidos em Contato; WhatsApp sem app instalado cai no navegador (Chrome), telefone abre o discador, e-mail abre o Gmail, mapa abre o Maps. Recuperação: e-mail chegou ao Mailpit; o link, aberto como `profetas://auth/recovery#…`, levou ao perfil com sessão e a nova senha valeu no login. Ressalva abaixo |
+| 7 | Contatos oficiais e recuperação de senha | Passou | Telefone e WhatsApp editados em Administração e refletidos em Contato; WhatsApp sem app instalado cai no navegador (Chrome), telefone abre o discador, e-mail abre o Gmail, mapa abre o Maps. Recuperação de ponta a ponta com `membro@local.test`: pedido no app, e-mail no Mailpit, link aberto no emulador (host trocado de `127.0.0.1` para `10.0.2.2`), o Chrome seguiu o `/auth/v1/verify` e abriu o app direto em Meu perfil com sessão; a senha foi trocada e o login no app com a nova senha funcionou (a senha do seed foi restaurada depois). Isso depende do `profetas://auth/recovery` em `additional_redirect_urls` do `supabase/config.toml` (commit `8cb848d`); antes dele o e-mail local redirecionava para `http://127.0.0.1:3000` |
 | 8 | Notificações: lembrete, cancelamento, abertura do evento | Passou | Lembrete agendado (WorkManager, ~40 dias de atraso para evento de dezembro), "Ajustes" mostra "1 lembrete(s) ativo(s)", remover cancela o job. Evento criado por SQL para daqui a 61 min: a notificação chegou, e tocar nela com o processo morto (`am kill`) abriu o detalhe do evento. A primeira execução do worker pediu nova tentativa (rede do emulador logo após o job) e a segunda notificou |
 | 9 | Modos Usuário/Administrador com duas contas | Passou | Membro: modo "Usuário", sem "Administração"; `profetas://open/admin`, `admin/event/new` e `admin/church` mostram "Acesso restrito à administração." Admin: modo "Administrador" e acesso às telas |
 | 10 | Negação de escrita/leitura pela API como membro | Passou | Ver tabela abaixo |
@@ -76,12 +78,11 @@ As permissões foram reforçadas no código de acesso a dados e nas telas; os te
 
 ## Falha encontrada e correção
 
-- **Ícones da barra de status ilegíveis no tema escuro do app** (E1). Causa raiz: `enableEdgeToEdge()` decide o estilo das barras pelo modo escuro do sistema, enquanto o tema escuro do app é uma preferência própria. Correção: `SystemBarIcons` aplica a aparência das barras a partir do tema do app. Teste `SystemBarsTest` escrito antes (falhou por compilação), commit `b37fe26` (`fix(android): icones da barra de status acompanham o tema escuro do app`). Conferido no emulador com captura de tela depois da correção.
+- **Ícones da barra de status ilegíveis no tema escuro do app** (E1). Causa raiz: `enableEdgeToEdge()` decide o estilo das barras pelo modo escuro do sistema, enquanto o tema escuro do app é uma preferência própria. Correção: `SystemBarIcons` aplica a aparência das barras a partir do tema do app. Teste `SystemBarsTest` escrito antes (falhou por compilação), commit `b37fe26` (`fix(android): icones da barra de status acompanham o tema escuro do app`). Conferido no emulador depois da correção (app escuro com sistema claro): captura em `docs/referencia-visual/kotlin/inicio-escuro.png`.
 
 ## Observações (não bloqueiam)
 
-- **Redirect de recuperação no Supabase local**: o `supabase/config.toml` não lista `profetas://auth/recovery` em `additional_redirect_urls`, então o e-mail local aponta para `http://127.0.0.1:3000` e não volta ao app (README, passo 6, manda autorizar o endereço no projeto real). Para validar o app, o fragmento com os tokens foi copiado do redirecionamento do `/auth/v1/verify` para um link `profetas://auth/recovery#…`. Falta conferir, no projeto de produção, o fluxo completo clicando no e-mail.
-- Mensagem de rede em inglês cru na Bíblia e telas de administração sem tratamento de falha na primeira carga: pendências já registradas das revisões, não corrigidas aqui.
+ Mensagem de rede em inglês cru na Bíblia e telas de administração sem tratamento de falha na primeira carga: pendências já registradas das revisões, não corrigidas aqui.
 - O texto da tela de cadastro ainda diz "eventos e dízimos", herdado do Expo; dízimos estão fora do escopo da versão.
 - O logo da Início tem fundo branco no tema escuro (mesmo recurso do Expo).
 - Dados de teste permanecem no banco local (eventos "Vigilia_Validacao" e "Lembrete_Teste", estudo, foto, aniversariante, conta `novo@local.test`); `npx supabase db reset` devolve ao estado do seed.
@@ -89,7 +90,7 @@ As permissões foram reforçadas no código de acesso a dados e nas telas; os te
 
 ## Pendências
 
-- Supabase de produção (projeto real, Redirect URLs, SMTP, migrações aplicadas e verificadas lá).
+- Supabase de produção (projeto real, SMTP, migrações aplicadas e verificadas lá). Em especial, autorizar `profetas://auth/recovery` em Auth > URL Configuration > Redirect URLs do projeto real (README, passo 6) e repetir a recuperação de senha clicando no e-mail; no ambiente local isso já está configurado e validado.
 - Aparelho físico: lembretes sob otimização de bateria, permissão de notificação no Android 13+ em aparelho real, WhatsApp instalado, desempenho do upload com fotos reais de câmera.
 - APK de release assinado (assinatura, minificação, comportamento com R8).
 - Não executável no emulador: abertura do WhatsApp nativo (só o fallback de navegador foi visto).
