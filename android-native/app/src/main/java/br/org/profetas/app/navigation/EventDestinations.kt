@@ -14,13 +14,13 @@ import br.org.profetas.app.event.registration.MyRegistrationsScreen
 // Telas empilhadas que leem a agenda do EventsViewModel: detalhe, inscrições, Projetos e Batismo.
 fun NavGraphBuilder.eventDestinations(container: AppContainer, eventsViewModel: EventsViewModel, navigator: Navigator) {
     composable(Route.EventDetail.PATTERN) { entry ->
-        val isLoggedIn by container.account.isLoggedIn.collectAsStateWithLifecycle()
+        val accountId by container.account.accountId.collectAsStateWithLifecycle()
         val profile by container.account.currentProfile.collectAsStateWithLifecycle()
 
         EventDetailScreen(
             eventId = entry.arguments?.getString("id").orEmpty(),
             viewModel = eventsViewModel,
-            isLoggedIn = isLoggedIn,
+            accountId = accountId,
             profileName = profile?.name,
             storageBaseUrl = container.storageBaseUrl,
             userMessages = container.userMessages,
@@ -29,9 +29,9 @@ fun NavGraphBuilder.eventDestinations(container: AppContainer, eventsViewModel: 
     }
 
     composable(Route.MyRegistrations.pattern) {
-        val isLoggedIn by container.account.isLoggedIn.collectAsStateWithLifecycle()
+        val accountId by container.account.accountId.collectAsStateWithLifecycle()
 
-        MyRegistrationsScreen(viewModel = eventsViewModel, isLoggedIn = isLoggedIn, onNavigate = navigator::go)
+        MyRegistrationsScreen(viewModel = eventsViewModel, accountId = accountId, onNavigate = navigator::go)
     }
 
     composable(Route.Campaigns.pattern) {

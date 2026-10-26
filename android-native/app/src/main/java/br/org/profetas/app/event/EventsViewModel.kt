@@ -19,6 +19,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -39,6 +41,7 @@ class EventsViewModel(
     private val registrations: RegistrationRepository,
     private val reminders: EventReminders,
     private val userMessages: UserMessages,
+    private val accountId: StateFlow<String?>,
 ) : ViewModel() {
 
     private val mutableState = MutableStateFlow(EventsState(reminderIds = reminders.enabledIds()))
@@ -47,6 +50,19 @@ class EventsViewModel(
 
     init {
         reload()
+
+        // Inscrições têm nome e telefone de quem se inscreveu: a lista de uma conta não pode sobreviver à troca para
+        // outra, nem quando a recarga da nova conta falha (sem rede). O valor inicial é pulado porque a lista ainda
+        // está vazia e as telas de inscrição pedem a carga ao abrir.
+        viewModelScope.launch {
+            accountId.drop(1).collectLatest { id ->
+                mutableState.update { current -> current.copy(registrations = emptyList()) }
+
+                if (id != null) {
+                    refreshRegistrations()
+                }
+            }
+        }
     }
 
     fun reload() {
@@ -172,11 +188,16 @@ class EventsViewModel(
     }
 
     // Falhar ao recarregar a lista não desfaz o que já foi salvo: fica a lista anterior até a próxima tentativa.
+    // A conta pode mudar enquanto a lista vem do servidor; a resposta atrasada é de outra pessoa e é descartada.
     private suspend fun refreshRegistrations() {
+        val requestedFor = accountId.value
+
         try {
             val mine = registrations.mine()
 
-            mutableState.update { current -> current.copy(registrations = mine) }
+            if (accountId.value == requestedFor) {
+                mutableState.update { current -> current.copy(registrations = mine) }
+            }
         } catch (e: Exception) {
             if (e is CancellationException) {
                 throw e
@@ -198,6 +219,7 @@ class EventsViewModel(
                     registrations = container.registrations,
                     reminders = container.reminders,
                     userMessages = container.userMessages,
+                    accountId = container.account.accountId,
                 )
             }
         }

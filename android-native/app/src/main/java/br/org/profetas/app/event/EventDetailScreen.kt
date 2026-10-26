@@ -50,7 +50,7 @@ import java.time.ZoneId
 fun EventDetailScreen(
     eventId: String,
     viewModel: EventsViewModel,
-    isLoggedIn: Boolean,
+    accountId: String?,
     profileName: String?,
     storageBaseUrl: String,
     userMessages: UserMessages,
@@ -58,8 +58,10 @@ fun EventDetailScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    // Entrar ou sair da conta muda quais inscrições são do membro; os lembretes podem ter mudado nos Ajustes.
-    LaunchedEffect(isLoggedIn) {
+    val isLoggedIn = accountId != null
+
+    // Entrar, sair ou trocar de conta muda quais inscrições são do membro; os lembretes podem ter mudado nos Ajustes.
+    LaunchedEffect(accountId) {
         viewModel.reloadRegistrations()
         viewModel.refreshReminders()
     }

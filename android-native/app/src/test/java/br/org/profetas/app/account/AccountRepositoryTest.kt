@@ -72,4 +72,23 @@ class AccountRepositoryTest {
         assertFalse(account.isLoggedIn.value)
         assertNull(account.currentProfile.value)
     }
+
+    // A troca A→B pelo link de recuperação não muda isLoggedIn; quem guarda dado por conta precisa ver a troca.
+    @Test fun accountIdFollowsTheSession() = runTest {
+        val client = client()
+        val account = AccountRepository(client, backgroundScope)
+
+        assertEquals("admin-id", account.accountId.value)
+
+        client.adoptSession(Session("B", "R2", "outro-id", "outro@local.test"))
+        runCurrent()
+
+        assertTrue(account.isLoggedIn.value)
+        assertEquals("outro-id", account.accountId.value)
+
+        client.dropSession()
+        runCurrent()
+
+        assertNull(account.accountId.value)
+    }
 }

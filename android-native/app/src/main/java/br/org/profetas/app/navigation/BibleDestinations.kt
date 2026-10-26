@@ -12,8 +12,8 @@ import br.org.profetas.app.study.StudiesScreen
 import br.org.profetas.app.study.StudiesViewModel
 import br.org.profetas.app.study.StudyScreen
 
-// Aba Bíblia e os estudos que se abrem por ela. Favoritos e estudos concluídos são guardados por conta: ao entrar ou
-// sair da conta, as telas releem o que pertence ao novo dono.
+// Aba Bíblia e os estudos que se abrem por ela. Favoritos e estudos concluídos são guardados por conta: ao entrar,
+// sair ou trocar de conta (inclusive A→B pelo link de recuperação), as telas releem o que pertence ao novo dono.
 fun NavGraphBuilder.bibleDestinations(
     container: AppContainer,
     bibleViewModel: BibleViewModel,
@@ -21,9 +21,9 @@ fun NavGraphBuilder.bibleDestinations(
     navigator: Navigator,
 ) {
     composable(Route.Bible.pattern) {
-        val isLoggedIn by container.account.isLoggedIn.collectAsStateWithLifecycle()
+        val accountId by container.account.accountId.collectAsStateWithLifecycle()
 
-        LaunchedEffect(isLoggedIn) {
+        LaunchedEffect(accountId) {
             bibleViewModel.refreshFavorites()
         }
 
@@ -31,9 +31,9 @@ fun NavGraphBuilder.bibleDestinations(
     }
 
     composable(Route.Studies.pattern) {
-        val isLoggedIn by container.account.isLoggedIn.collectAsStateWithLifecycle()
+        val accountId by container.account.accountId.collectAsStateWithLifecycle()
 
-        LaunchedEffect(isLoggedIn) {
+        LaunchedEffect(accountId) {
             studiesViewModel.refreshCompleted()
         }
 
@@ -41,9 +41,9 @@ fun NavGraphBuilder.bibleDestinations(
     }
 
     composable(Route.Study.PATTERN) { entry ->
-        val isLoggedIn by container.account.isLoggedIn.collectAsStateWithLifecycle()
+        val accountId by container.account.accountId.collectAsStateWithLifecycle()
 
-        LaunchedEffect(isLoggedIn) {
+        LaunchedEffect(accountId) {
             studiesViewModel.refreshCompleted()
         }
 

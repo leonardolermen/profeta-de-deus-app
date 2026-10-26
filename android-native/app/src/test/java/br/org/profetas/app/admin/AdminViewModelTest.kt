@@ -83,7 +83,7 @@ class AdminViewModelTest {
     }
 
     // Os repositórios de verdade contra um MockWebServer, como nos outros ViewModels.
-    private fun TestScope.viewModel(scope: CoroutineScope, loggedIn: MutableStateFlow<Boolean>): AdminViewModel {
+    private fun TestScope.viewModel(scope: CoroutineScope, accountId: MutableStateFlow<String?>): AdminViewModel {
         Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
 
         val config = SupabaseConfig("http://127.0.0.1:${server.port}", "anon-key", allowLocalHttp = true)
@@ -108,7 +108,7 @@ class AdminViewModelTest {
             eventPhotos = EventPhotoChange(mock(PhotoStorage::class.java), events),
             galleryPhotos = GalleryPhotoChange(mock(PhotoStorage::class.java), gallery),
             messages = UserMessages(),
-            isLoggedIn = loggedIn,
+            accountId = accountId,
         )
     }
 
@@ -124,8 +124,8 @@ class AdminViewModelTest {
     // Dois admins podem entrar em sequência no mesmo processo: as listas do primeiro (inclusive pedidos de oração e
     // inscrições, privados) não podem aparecer para o segundo enquanto a carga dele não termina.
     @Test fun sessionEndClearsLoadedContentSoNextAdminReloads() = runTest {
-        val loggedIn = MutableStateFlow(true)
-        val viewModel = viewModel(backgroundScope, loggedIn)
+        val accountId = MutableStateFlow<String?>("admin-a")
+        val viewModel = viewModel(backgroundScope, accountId)
 
         viewModel.loadIfEmpty()
         viewModel.awaitLoaded()
@@ -133,17 +133,31 @@ class AdminViewModelTest {
         assertTrue(viewModel.state.value.hasLoaded)
         assertEquals(1, viewModel.state.value.prayers.size)
 
-        loggedIn.value = false
+        accountId.value = null
 
         assertFalse(viewModel.state.value.hasLoaded)
         assertEquals(emptyList<Any>(), viewModel.state.value.prayers)
 
-        loggedIn.value = true
+        accountId.value = "admin-b"
         viewModel.loadIfEmpty()
         viewModel.awaitLoaded()
 
         assertEquals(2, prayerReads.get())
         assertEquals(1, viewModel.state.value.prayers.size)
+    }
+
+    // A troca de conta pelo link de recuperação não passa por "deslogado": o reset não pode depender disso.
+    @Test fun accountSwitchWithoutLogoutClearsLoadedContent() = runTest {
+        val accountId = MutableStateFlow<String?>("admin-a")
+        val viewModel = viewModel(backgroundScope, accountId)
+
+        viewModel.loadIfEmpty()
+        viewModel.awaitLoaded()
+
+        accountId.value = "admin-b"
+
+        assertFalse(viewModel.state.value.hasLoaded)
+        assertEquals(emptyList<Any>(), viewModel.state.value.prayers)
     }
 
     private companion object {

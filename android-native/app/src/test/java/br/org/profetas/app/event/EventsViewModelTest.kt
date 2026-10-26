@@ -2,6 +2,7 @@ package br.org.profetas.app.event
 
 import br.org.profetas.app.account.AccountRepository
 import br.org.profetas.app.account.ContentWriteGuard
+import br.org.profetas.app.event.registration.Registration
 import br.org.profetas.app.event.registration.RegistrationRepository
 import br.org.profetas.app.event.reminder.EventReminders
 import br.org.profetas.app.event.weekly.WeeklyServiceRepository
@@ -10,6 +11,7 @@ import br.org.profetas.app.support.http.SupabaseConfig
 import br.org.profetas.app.support.message.UserMessages
 import br.org.profetas.app.support.session.Session
 import br.org.profetas.app.support.session.SessionStorage
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +23,8 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -63,6 +67,11 @@ class EventsViewModelTest {
 
     private val userMessages = UserMessages()
 
+    private lateinit var client: SupabaseClient
+
+    // Avisada quando o servidor entrega a segunda leitura de inscrições (a da conta que acabou de entrar).
+    private val secondRegistrationLoad = CompletableDeferred<Unit>()
+
     private class FakeReminders : EventReminders {
 
         val enabled = mutableSetOf<String>()
@@ -100,9 +109,13 @@ class EventsViewModelTest {
             return enrollResponse
         }
 
-        registrationLoads.incrementAndGet()
+        val response = registrationResponses.poll() ?: MockResponse().setBody("[]")
 
-        return registrationResponses.poll() ?: MockResponse().setBody("[]")
+        if (registrationLoads.incrementAndGet() == 2) {
+            secondRegistrationLoad.complete(Unit)
+        }
+
+        return response
     }
 
     @After fun stopServer() {
@@ -116,8 +129,9 @@ class EventsViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
 
         val config = SupabaseConfig("http://127.0.0.1:${server.port}", "anon-key", allowLocalHttp = true)
-        val client = SupabaseClient(config, MemberSessionStorage(), OkHttpClient())
-        val guard = ContentWriteGuard(AccountRepository(client, scope))
+        client = SupabaseClient(config, MemberSessionStorage(), OkHttpClient())
+        val account = AccountRepository(client, scope)
+        val guard = ContentWriteGuard(account)
 
         return EventsViewModel(
             events = EventRepository(client, guard),
@@ -125,8 +139,17 @@ class EventsViewModelTest {
             registrations = RegistrationRepository(client, guard),
             reminders = FakeReminders(),
             userMessages = userMessages,
+            accountId = account.accountId,
         )
     }
+
+    // A rede do MockWebServer roda em threads reais: o tempo virtual do runTest não espera por ela.
+    private suspend fun EventsViewModel.awaitState(predicate: (EventsState) -> Boolean): EventsState =
+        withContext(Dispatchers.Default) {
+            withTimeout(WAIT_TIMEOUT_MILLIS) {
+                state.first(predicate)
+            }
+        }
 
     private fun eventRow(
         id: String,
@@ -275,5 +298,48 @@ class EventsViewModelTest {
         viewModel.enroll("retiro", "Maria", "11999998888")
 
         assertEquals("Este cadastro já existe.", message.await())
+    }
+
+    // Celular compartilhado: B entra sem rede (ou pelo link de recuperação com A ainda logado) e não pode ver nome e
+    // telefone das inscrições de A, nem depois que a recarga das inscrições dele falha.
+    @Test fun registrationsClearedWhenAccountChanges() = runTest {
+        val viewModel = loaded(eventRow("retiro", "2100-01-01T10:00:00-03:00"))
+        registrationResponses.add(MockResponse().setBody(MARIA_REGISTRATION))
+        registrationResponses.add(MockResponse().setResponseCode(500))
+
+        viewModel.reloadRegistrations()
+        viewModel.awaitState { current -> current.registrations.isNotEmpty() }
+
+        client.adoptSession(Session("B", "R2", "outro-id", "outro@local.test"))
+
+        viewModel.awaitState { current -> current.registrations.isEmpty() }
+        withContext(Dispatchers.Default) {
+            withTimeout(WAIT_TIMEOUT_MILLIS) {
+                secondRegistrationLoad.await()
+            }
+        }
+        assertEquals(emptyList<Registration>(), viewModel.state.value.registrations)
+    }
+
+    @Test fun logoutClearsRegistrationsWithoutReloading() = runTest {
+        val viewModel = loaded(eventRow("retiro", "2100-01-01T10:00:00-03:00"))
+        registrationResponses.add(MockResponse().setBody(MARIA_REGISTRATION))
+
+        viewModel.reloadRegistrations()
+        viewModel.awaitState { current -> current.registrations.isNotEmpty() }
+
+        client.dropSession()
+        val state = viewModel.awaitState { current -> current.registrations.isEmpty() }
+
+        assertEquals(emptyList<Registration>(), state.registrations)
+        assertEquals(1, registrationLoads.get())
+    }
+
+    private companion object {
+
+        const val WAIT_TIMEOUT_MILLIS = 5_000L
+
+        const val MARIA_REGISTRATION = """[{"id":"r1","evento_id":"retiro","nome":"Maria",""" +
+            """"telefone":"11999998888","usuario_id":"membro-id"}]"""
     }
 }

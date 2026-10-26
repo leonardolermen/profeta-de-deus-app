@@ -50,7 +50,7 @@ class AdminViewModel(
     private val eventPhotos: EventPhotoChange,
     private val galleryPhotos: GalleryPhotoChange,
     private val messages: UserMessages,
-    isLoggedIn: Flow<Boolean>,
+    accountId: Flow<String?>,
 ) : ViewModel() {
 
     private val mutableState = MutableStateFlow(AdminState())
@@ -68,16 +68,15 @@ class AdminViewModel(
 
     private var loadJob: Job? = null
 
-    // Este ViewModel vive o processo inteiro, mais que a sessão: sem zerar o estado ao sair, o próximo admin a entrar
-    // veria as listas do anterior (pedidos de oração e inscrições são privados) até recarregar, já que
-    // loadIfEmpty() só olha hasLoaded. A carga em curso é cancelada para não repovoar o estado depois do zero.
+    // Este ViewModel vive o processo inteiro, mais que a sessão: sem zerar o estado quando a conta muda, o próximo
+    // admin veria as listas do anterior (pedidos de oração e inscrições são privados) até recarregar, já que
+    // loadIfEmpty() só olha hasLoaded. Zera em toda troca, não só no logout: pelo link de recuperação a conta muda de
+    // A para B sem passar por "deslogado". A carga em curso é cancelada para não repovoar o estado depois do zero.
     init {
         viewModelScope.launch {
-            isLoggedIn.collect { loggedIn ->
-                if (!loggedIn) {
-                    loadJob?.cancel()
-                    mutableState.value = AdminState()
-                }
+            accountId.collect {
+                loadJob?.cancel()
+                mutableState.value = AdminState()
             }
         }
     }
@@ -264,7 +263,7 @@ class AdminViewModel(
                     eventPhotos = EventPhotoChange(container.imageUploader, container.events),
                     galleryPhotos = GalleryPhotoChange(container.imageUploader, container.gallery),
                     messages = container.userMessages,
-                    isLoggedIn = container.account.isLoggedIn,
+                    accountId = container.account.accountId,
                 )
             }
         }

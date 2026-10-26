@@ -24,6 +24,12 @@ class AccountRepository(private val client: SupabaseClient, scope: CoroutineScop
         .map { session -> session != null }
         .stateIn(scope, SharingStarted.Eagerly, client.session != null)
 
+    // Muda a cada login, logout e troca de conta. A troca A→B pelo link de recuperação não passa por "deslogado", então
+    // isLoggedIn não muda: quem guarda dado privado de uma conta (inscrições, listas do admin) observa este fluxo.
+    val accountId: StateFlow<String?> = client.sessionState
+        .map { session -> session?.userId }
+        .stateIn(scope, SharingStarted.Eagerly, client.session?.userId)
+
     val currentProfile: StateFlow<Profile?> = combine(loadedProfile, client.sessionState) { profile, session ->
         profile?.takeIf { loaded -> loaded.id == session?.userId }
     }.stateIn(scope, SharingStarted.Eagerly, null)

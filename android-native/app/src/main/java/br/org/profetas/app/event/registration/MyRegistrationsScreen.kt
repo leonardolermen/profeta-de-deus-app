@@ -33,12 +33,14 @@ import br.org.profetas.app.support.ui.EmptyState
 
 // Sem equivalente no Expo: mesma página de app/campanhas.tsx (título, subtítulo e cartões com borda).
 @Composable
-fun MyRegistrationsScreen(viewModel: EventsViewModel, isLoggedIn: Boolean, onNavigate: (Route) -> Unit) {
+fun MyRegistrationsScreen(viewModel: EventsViewModel, accountId: String?, onNavigate: (Route) -> Unit) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val isLoggedIn = accountId != null
 
     var cancelling by rememberSaveable { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(isLoggedIn) {
+    // Chave pela conta, não pelo booleano: a troca A→B pelo link de recuperação não passa por "deslogado".
+    LaunchedEffect(accountId) {
         viewModel.reloadRegistrations()
     }
 
