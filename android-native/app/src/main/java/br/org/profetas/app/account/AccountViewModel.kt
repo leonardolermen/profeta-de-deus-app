@@ -32,6 +32,7 @@ class AccountViewModel(private val account: AccountRepository, private val messa
     private val mutableState = MutableStateFlow(AccountState())
 
     val state: StateFlow<AccountState> = mutableState.asStateFlow()
+    val userMessages get() = messages.messages
 
     // Eventos de disparo único, não campos do state: o AccountViewModel é criado uma vez em ProfetasApp e sobrevive
     // à navegação, então um "signedIn = true" ficaria preso e fecharia a tela de login em toda visita seguinte (o

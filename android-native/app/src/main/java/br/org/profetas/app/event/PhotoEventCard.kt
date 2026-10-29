@@ -119,4 +119,4 @@ private fun subtitleOf(event: Event): String =
 
 // Modelo do Coil: a foto enviada pela igreja (URL) ou, sem ela, a imagem padrão do tipo (@DrawableRes).
 fun imageOf(event: Event, storageBaseUrl: String): Any =
-    event.imagePath?.let { path -> StorageBucket.EVENTS.publicUrl(storageBaseUrl, path) } ?: event.type.defaultImage
+    event.imagePath?.let { path -> StorageBucket.EVENTS.authenticatedUrl(storageBaseUrl, path) } ?: event.type.defaultImage

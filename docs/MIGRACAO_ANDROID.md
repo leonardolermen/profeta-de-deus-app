@@ -1,5 +1,7 @@
 # Migração para Android Kotlin
 
+> Atualização de 29/10/2026: a versão 2.4.0 exige login, usa Bíblia Livre oficial offline e fotos autenticadas. O histórico completo está em `ATUALIZACOES.md`; pendências atuais em `03_TAREFAS.md`. Descrições de API bíblica/entrada pública anteriores a essas versões são históricas.
+
 A aplicação está em `android-native/`. O aplicativo Expo que a precedeu foi removido do repositório; as capturas de tela dele ficam em `docs/referencia-visual/expo/` como referência visual, e `docs/referencia-visual/kotlin/` traz as equivalentes da versão nativa.
 
 ## Organização nativa

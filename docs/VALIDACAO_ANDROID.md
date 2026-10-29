@@ -1,3 +1,29 @@
+# Validação da versão 2.4.0 — 29/10/2026
+
+- APK debug compilado com sucesso, versionCode 7 e versionName 2.4.0. Cópia `Profetas-de-Deus-2.4.0-Login.apk` com hash idêntico ao APK gerado.
+- 147 testes JUnit sem falhas ou erros. Novos testes cobrem conta confirmada/pendente, cadastro sem sessão, bloqueio de oração antes da rede, vínculo do pedido ao usuário e fotos autenticadas, inclusive renovação de sessão e não envio de credenciais a outros hosts.
+- O teste legado de fotos foi atualizado para exigir endpoint autenticado, substituindo a expectativa anterior de URL pública. A execução final passou após a mudança.
+- Android Lint sem erros. `git diff --check` sem erros de espaço em branco.
+- Migração `20261029000100_acesso_autenticado.sql` aplicada pelo responsável no SQL Editor; ele informou “Success. No rows returned”. A conferência REST anônima posterior obteve HTTP 401 em eventos, estudos, fotos, igreja, cultos_semanais, perfis, oracoes, aniversariantes e inscricoes. A função is_confirmed_user retornou false para a chamada anônima.
+- Essas consultas usaram limit=0 e não leram dados pessoais nem criaram pedidos. Não foram criadas contas remotas de teste ou enviadas mensagens a terceiros.
+- Sintaxe da migração e do novo teste SQL conferida com parser PostgreSQL (pglast). Testes pgTAP preparados/ajustados, mas não executados: Docker local não está em execução e a conexão PostgreSQL direta IPv6 não está disponível nesta rede. A negação de escrita e o fluxo completo de fotos no servidor ainda exigem validação com sessões autorizadas.
+- Login/Voltar/logout, recuperação, oração e fotos com membro/admin aguardam validação no celular. Não foi aberto emulador. O APK permanece debug; publicação na Play ainda depende dos itens pendentes de `PUBLICACAO_PLAY_STORE.md`.
+- Em 29/10/2026 o responsável informou que as modificações ficaram boas no celular. Registro de feedback geral favorável; não foi fornecido resultado por cenário, portanto os testes integrados específicos acima continuam pendentes de documentação.
+
+---
+
+# Validação da versão 2.3.0 — 29/10/2026
+
+- APK debug compilado com sucesso, versionCode 6 e versionName 2.3.0. Cópia de distribuição: `Profetas-de-Deus-2.3.0-Biblia-Livre.apk`.
+- 138 testes JUnit sem falhas ou erros. Os sete novos testes conferem a origem por SHA-256, 66 livros/1.189 capítulos, texto de João 3:16, primeiro versículo de Gênesis, seleção correta de capítulos, contagem de Tito/Filemom, rejeição de capítulo inválido, créditos no compartilhamento e abertura de referências de favoritos antigos.
+- O teste inicial identificou o BOM UTF-8 do VPL original, que afetaria a primeira referência. O leitor agora ignora o marcador de codificação ao interpretar a referência, preservando os bytes do arquivo e o texto dos versículos. Todos os testes passaram após a correção.
+- Android Lint sem erros. `git diff --check` sem erros de espaço em branco.
+- O VPL extraído do APK tem o mesmo SHA-256 do arquivo oficial; licença integral e índice também estão presentes no APK. Leitura local substitui a consulta à API e não usa token de Bíblia.
+- Revisão dos arquivos alterados sem achados de credenciais. APK e configuração local permanecem ignorados pelo Git.
+- Validação visual no celular, compartilhamento e leitura em modo avião ainda pendentes. Não foi aberto emulador nem alterado o banco remoto. Login inicial com aprovação de membros é somente uma proposta documentada nesta etapa.
+
+---
+
 # Validação da versão 2.2.1 — 29/10/2026
 
 - APK debug compilado com sucesso, versionCode 5 e versionName 2.2.1. Cópia `Profetas-de-Deus-2.2.1.apk` com hash idêntico ao APK gerado.

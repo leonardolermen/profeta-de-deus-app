@@ -11,7 +11,7 @@ class PhotoTest {
     @Test fun pathWinsOverLegacyUrl() {
         val photo = Photo("1", "Culto", "Cultos", url = "https://old.example/a.jpg", path = "2026/culto 1.jpg")
 
-        assertEquals("$baseUrl/storage/v1/object/public/galeria/2026/culto%201.jpg", photo.imageUrl(baseUrl))
+        assertEquals("$baseUrl/storage/v1/object/authenticated/galeria/2026/culto%201.jpg", photo.imageUrl(baseUrl))
     }
 
     @Test fun legacyUrlStillWorks() {

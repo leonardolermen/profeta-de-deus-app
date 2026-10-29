@@ -12,7 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.HasDefaultViewModelProviderFactory
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import coil.imageLoader
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -42,16 +50,46 @@ private class VisibleScreen(val reload: () -> Unit, val isBusy: Boolean)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: String?) {
+    val accountViewModel: AccountViewModel = viewModel(factory = AccountViewModel.Factory)
+    val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
+    val accountId by container.account.accountId.collectAsStateWithLifecycle()
+    val isDark by settingsViewModel.isDark.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    LaunchedEffect(accountId) { context.imageLoader.memoryCache?.clear() }
+
+    LaunchedEffect(recoveryLink) { recoveryLink?.let(accountViewModel::acceptRecovery) }
+
+    if (accountId == null) {
+        AuthEntry(accountViewModel, isDark)
+        return
+    }
+
+    // Dados e navegação de uma conta não sobrevivem ao logout ou à troca de usuário.
+    val parent = checkNotNull(LocalViewModelStoreOwner.current) as HasDefaultViewModelProviderFactory
+    val owner = remember(accountId, parent) {
+        object : ViewModelStoreOwner, HasDefaultViewModelProviderFactory {
+            override val viewModelStore = ViewModelStore()
+            override val defaultViewModelProviderFactory = parent.defaultViewModelProviderFactory
+            override val defaultViewModelCreationExtras = parent.defaultViewModelCreationExtras
+        }
+    }
+    DisposableEffect(owner) { onDispose { owner.viewModelStore.clear() } }
+    CompositionLocalProvider(LocalViewModelStoreOwner provides owner) {
+        MemberApp(container, if (recoveryLink != null) Route.Profile else initialRoute, accountViewModel, settingsViewModel)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MemberApp(container: AppContainer, initialRoute: Route?, accountViewModel: AccountViewModel, settingsViewModel: SettingsViewModel) {
     val eventsViewModel: EventsViewModel = viewModel(factory = EventsViewModel.Factory)
     val churchViewModel: ChurchViewModel = viewModel(factory = ChurchViewModel.Factory)
     val bibleViewModel: BibleViewModel = viewModel(factory = BibleViewModel.Factory)
     val studiesViewModel: StudiesViewModel = viewModel(factory = StudiesViewModel.Factory)
-    val accountViewModel: AccountViewModel = viewModel(factory = AccountViewModel.Factory)
     val prayerViewModel: PrayerViewModel = viewModel(factory = PrayerViewModel.Factory)
     val birthdaysViewModel: BirthdaysViewModel = viewModel(factory = BirthdaysViewModel.Factory)
     val galleryViewModel: GalleryViewModel = viewModel(factory = GalleryViewModel.Factory)
     val adminViewModel: AdminViewModel = viewModel(factory = AdminViewModel.Factory)
-    val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
 
     val eventsState by eventsViewModel.state.collectAsStateWithLifecycle()
     val churchState by churchViewModel.state.collectAsStateWithLifecycle()
@@ -71,6 +109,8 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
     val visible = backStackEntry?.destination?.route?.let(Route::fromPath) ?: Route.Home
 
     val snackbarHost = remember { SnackbarHostState() }
+    val accountId by container.account.accountId.collectAsStateWithLifecycle()
+    LaunchedEffect(accountId) { accountViewModel.loadProfile() }
 
     LaunchedEffect(Unit) {
         container.userMessages.messages.collect { message ->
@@ -88,10 +128,6 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
                 navigator.go(Route.Profile)
             }
         }
-    }
-
-    LaunchedEffect(recoveryLink) {
-        recoveryLink?.let(accountViewModel::acceptRecovery)
     }
 
     val screen = when (visible) {

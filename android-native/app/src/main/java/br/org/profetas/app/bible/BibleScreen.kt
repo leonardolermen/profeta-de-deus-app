@@ -32,7 +32,12 @@ fun BibleScreen(viewModel: BibleViewModel, onNavigate: (Route) -> Unit) {
             }
             Text("Meus favoritos", fontSize = 26.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(16.dp))
-            FavoritesList(state.favorites, viewModel::toggleFavorite)
+            FavoritesList(state.favorites, viewModel::toggleFavorite) { key ->
+                FavoriteVerses.passageOf(key, state.books)?.let {
+                    showingFavorites = false
+                    viewModel.openPassage(it)
+                }
+            }
         }
         state.opened != null -> ChapterReading(state, viewModel) { showingFavorites = true }
         else -> Column(
@@ -40,6 +45,8 @@ fun BibleScreen(viewModel: BibleViewModel, onNavigate: (Route) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text("Bíblia Sagrada", fontSize = 30.sp, fontWeight = FontWeight.ExtraBold)
+            Text(BibleEdition.NAME, fontSize = 16.sp)
+            BibleCredits()
             Text("Escolha um livro abaixo ou pesquise uma passagem.", fontSize = 17.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -27,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
+import br.org.profetas.app.support.storage.StorageAuthInterceptor
 
 /** Injeção de dependência manual: um SupabaseClient (e uma sessão) para o app inteiro. */
 class AppContainer(context: Context) {
@@ -39,6 +40,12 @@ class AppContainer(context: Context) {
         .build()
 
     private val client = SupabaseClient(config, KeystoreSessionStorage(context), http)
+    fun imageHttpClient(): OkHttpClient = http.newBuilder()
+        .followRedirects(false)
+        .followSslRedirects(false)
+        .apply {
+            if (config.isUsable) addInterceptor(StorageAuthInterceptor(config.url, config.anonKey, { client.session }, client::refreshForImages))
+        }.build()
 
     // Vive o processo inteiro, como o próprio container; só mantém os estados derivados da sessão.
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -55,7 +62,7 @@ class AppContainer(context: Context) {
     val birthdays = BirthdayRepository(client, guard)
     val gallery = GalleryRepository(client, guard)
     val church = ChurchRepository(client, guard)
-    val bible = BibleRepository(client)
+    val bible = BibleRepository { path -> context.assets.open(path) }
 
     val imageUploader = ImageUploader(client, AndroidImageReader(context.contentResolver))
 

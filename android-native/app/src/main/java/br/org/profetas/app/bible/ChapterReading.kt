@@ -50,6 +50,7 @@ internal fun ChapterReading(state: BibleState, viewModel: BibleViewModel, onFavo
         }
         Text("${opened.book.name} ${opened.number}", fontSize = 26.sp, fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground)
+        BibleCredits()
         OutlinedButton(onClick = { showingLookup = true }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
             Text("Buscar livro, capítulo e versículo", fontSize = 17.sp)
         }
@@ -102,7 +103,7 @@ internal fun ChapterReading(state: BibleState, viewModel: BibleViewModel, onFavo
                 OutlinedButton(onClick = { viewModel.toggleFavorite(key) }, modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
                     Text(if (key in state.favorites) "★ Favorito" else "☆ Favoritar", fontSize = 16.sp)
                 }
-                OutlinedButton(onClick = { share(context, key) }, modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
+                OutlinedButton(onClick = { share(context, BibleEdition.shareText(key)) }, modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
                     Text("Compartilhar", fontSize = 16.sp)
                 }
             }

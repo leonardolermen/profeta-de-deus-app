@@ -79,8 +79,8 @@ fun PhotoScreen(photoId: String, viewModel: GalleryViewModel, storageBaseUrl: St
 
         if (imageUrl != null) {
             BlockButton(
-                label = "Compartilhar foto",
-                onClick = { share(context, "${photo.title}\n$imageUrl") },
+                label = "Compartilhar referência",
+                onClick = { share(context, "${photo.title}\n${photo.album}") },
                 modifier = Modifier.padding(top = 20.dp),
             )
         }

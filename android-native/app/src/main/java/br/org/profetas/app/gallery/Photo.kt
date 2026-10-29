@@ -12,7 +12,7 @@ data class Photo(
 ) {
 
     fun imageUrl(baseUrl: String): String? =
-        path?.let { storedPath -> StorageBucket.GALLERY.publicUrl(baseUrl, storedPath) } ?: url
+        path?.let { storedPath -> StorageBucket.GALLERY.authenticatedUrl(baseUrl, storedPath) } ?: url
 }
 
 // Uma linha de fotos tem exatamente uma origem (check fotos_url_ou_caminho no banco): a URL externa das fotos

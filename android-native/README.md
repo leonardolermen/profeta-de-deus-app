@@ -2,6 +2,21 @@
 
 Aplicativo Kotlin + Jetpack Compose. Abra **esta pasta** no Android Studio. Não é necessário Node, Expo ou uma conta Apple para compilar o Android. O backend fica em `../supabase/` (veja o README da raiz).
 
+## Atualização 2.4.0 — 29/10/2026
+
+- Login inicial obrigatório para a área do aplicativo, incluindo Bíblia e ações pessoais. Cadastro/recuperação continuam acessíveis. Login e sessão retornada pelo cadastro exigem e-mail confirmado; aprovação manual não foi habilitada, conforme escolha do responsável.
+- Logout ou troca de conta descartam navegação, ViewModels privados e cache de imagens em memória. Fotos do Supabase usam endpoint autenticado, sem cache em disco nem envio de credenciais para hosts externos. O compartilhamento de fotos passa a enviar a referência textual, sem URL privada/token.
+- Oração exige sessão antes de chamar a rede e inclui usuario_id. Administração continua exclusiva de admin.
+- O responsável aplicou a migração `../supabase/migrations/20261029000100_acesso_autenticado.sql` no projeto hospedado em 29/10/2026 e informou sucesso. A conferência REST posterior obteve HTTP 401 nas nove tabelas para acesso anônimo. Fluxos de membro/admin e fotos privadas ainda aguardam teste no celular; testes pgTAP não foram executados nesta etapa porque Docker está parado.
+- APK: `app/build/outputs/apk/debug/Profetas-de-Deus-2.4.0-Login.apk`. Conferência visual no celular pendente. Roteiro de publicação: `../docs/PUBLICACAO_PLAY_STORE.md`.
+
+## Atualização 2.3.0 — 29/10/2026
+
+- Bíblia Livre (BLIVRE), TR, fevereiro de 2018, substitui a leitura NVI. Texto oficial completo incluído no APK para leitura offline, com licença CC BY 3.0 BR e atribuição aos autores.
+- Sobre a tradução e licença disponível na Bíblia e no leitor. Compartilhamento identifica a tradução e inclui os créditos. Referências de favoritos anteriores são preservadas, com opção de abrir na nova edição.
+- APK de teste: `app/build/outputs/apk/debug/Profetas-de-Deus-2.3.0-Biblia-Livre.apk`. Origem, hashes, permissão e comparação em `../docs/BIBLIA_LIVRE.md`.
+- Login inicial e aprovação de membros estão documentados como proposta futura no README da raiz; não foram implementados nesta versão.
+
 ## Atualização 2.2.1 — 29/10/2026
 
 - Mostrar/Ocultar senha no login, cadastro, nova senha e confirmação. Botão textual com área de toque mínima de 48 dp e descrição para leitor de tela; os campos começam ocultos e a senha continua fora do estado persistido.
@@ -44,21 +59,22 @@ Nada disso foi feito contra um Supabase de produção, nem em celular físico.
 
 | Pendência | Tipo | Situação |
 |---|---|---|
-| Criar o projeto Supabase de produção e aplicar as migrações de `../supabase/migrations/` | Configuração | Pendente |
+| Projeto Supabase e migração de acesso da 2.4.0 | Configuração | Projeto existente; responsável informou aplicação com sucesso e leitura anônima foi negada nas nove tabelas |
 | Configurar no Supabase de produção o redirect `profetas://auth/recovery`, o Site URL e o SMTP | Configuração | Pendente |
-| Promover a primeira conta administradora e cadastrar os conteúdos oficiais | Configuração | Pendente |
-| Repetir o roteiro funcional contra o banco de produção | Teste integrado | Validado apenas no Supabase local |
-| Testar em celular físico (teclado, imagens, desempenho, bateria nos lembretes) | Teste de interface | Validado apenas no emulador |
+| Contas administradoras e conteúdo oficial | Configuração | Acesso admin já utilizado pelo responsável; revisar/cadastrar o conteúdo oficial |
+| Repetir o roteiro funcional contra o banco de produção | Teste integrado | REST anônimo conferido; fluxos completos membro/admin ainda precisam de registro |
+| Testar em celular físico (teclado, imagens, desempenho, bateria nos lembretes) | Teste de interface | Feedback geral favorável do responsável em 29/10/2026; checklist por cenário ainda pendente |
+| Política pública, exclusão de conta/dados e avisos de terceiros | Publicação | Pendentes obrigatórias de preparação; seguir `../docs/PUBLICACAO_PLAY_STORE.md` |
 | Gerar uma versão release assinada para distribuição | Entrega | Apenas APK debug gerado |
 
 Recursos que **não foram implementados** e podem entrar em uma próxima etapa:
 
-- Bíblia offline: atualmente a leitura depende da API e de internet.
+- Seletor de traduções: atualmente a leitura usa apenas a Bíblia Livre TR, já disponível offline desde a versão 2.3.0.
 - Sincronização de favoritos e conclusões de estudos entre aparelhos: atualmente são locais e separados por conta.
 - Notificações push: atualmente há lembretes locais de eventos selecionados.
-- Exclusão de conta pelo aplicativo, pagamentos/dízimos, transmissão ao vivo, chat e anexos.
+- Pagamentos/dízimos, transmissão ao vivo, chat e anexos.
 
-Fotos de eventos e da galeria são enviadas pelo seletor do aparelho para o Storage do Supabase (a imagem é reduzida a 1600 px no maior lado antes do envio). Os itens opcionais acima não têm implementação agendada.
+Fotos de eventos e da galeria são enviadas pelo seletor do aparelho para o Storage do Supabase (a imagem é reduzida a 1600 px no maior lado antes do envio). Os itens opcionais acima não têm implementação agendada. Exclusão de conta/dados não está pronta e deve ser concluída antes de publicar, junto da política de privacidade pública e dos avisos de licenças. Créditos na ficha da Play Store estão orientados em `../docs/PUBLICACAO_PLAY_STORE.md`.
 
 ## Modos de acesso: administrador e usuário
 
@@ -78,7 +94,7 @@ O modo é definido pelo cargo da conta na tabela protegida `public.perfis`. Não
 
 Em Ajustes, a conta mostra **Modo usuário** ou **Modo administrador**. Apenas administradores veem a entrada Administração. As telas de edição verificam o cargo, e o acesso a dados reconsulta a permissão antes de salvar ou excluir conteúdo, inclusive para detectar acesso revogado. A proteção definitiva é a RLS do Supabase, que nega chamadas diretas feitas fora do app (comprovado no Supabase local com o token de um membro). Em produção, ela só existe depois de aplicadas as migrações.
 
-O usuário comum mantém as interações pessoais autorizadas: oração, inscrições, perfil, favoritos, conclusão de estudos e preferências. Nenhuma delas permite alterar o conteúdo publicado pela igreja. Visitantes sem login consultam o conteúdo público; inscrições e dados pessoais exigem autenticação.
+O usuário comum mantém as interações pessoais autorizadas: oração, inscrições, perfil, favoritos, conclusão de estudos e preferências. Nenhuma delas permite alterar o conteúdo publicado pela igreja. Na 2.4.0, sem login, somente cadastro e recuperação ficam disponíveis. Qualquer conta confirmada pode entrar; não há aprovação manual.
 
 O administrador gerencia o conteúdo e os cadastros disponíveis no painel. Alterações no código, layout estrutural ou funcionalidades do aplicativo exigem desenvolvimento e uma nova versão do APK. A promoção de administradores fica restrita à manutenção segura do banco.
 
@@ -148,8 +164,8 @@ Os itens desta seção descrevem código existente, validado no Supabase local (
 - Início com os mesmos eventos reais da agenda, ordenados por data.
 - Agenda com busca, filtro por tipo, histórico, detalhes e compartilhamento.
 - Inscrição em eventos e batismos, com consentimento de contato, bloqueio de duplicidade e cancelamento pelo usuário.
-- Pedidos de oração para visitantes e membros, visíveis somente a administradores.
-- Bíblia NVI com livros/capítulos e texto real da API A Bíblia Digital; favoritos e compartilhamento.
+- Pedidos de oração somente com sessão, vinculados ao usuário e visíveis na lista recebida somente a administradores. A política de banco requer a migração de acesso da 2.4.0.
+- Bíblia Livre TR com livros/capítulos e texto oficial incluído no APK; leitura offline, favoritos, compartilhamento com atribuição e licença acessível.
 - Estudos publicados no banco, leitura completa, busca, conclusão local e compartilhamento.
 - Aniversariantes por mês atual, acessíveis a membros, somente com consentimento de divulgação.
 - Galeria por álbum, detalhe de imagem, erros de carregamento e compartilhamento de link.
@@ -160,8 +176,8 @@ Os itens desta seção descrevem código existente, validado no Supabase local (
 
 ## Limites explícitos
 
-- Supabase e API bíblica exigem internet. A API bíblica usa `https://abibliadigital.api.br/api/`, o domínio oficial atual (o endereço antigo do Expo retornou erro na verificação). Os endpoints públicos de livros e capítulo foram verificados: 66 livros e Salmos 23 com 6 versículos. Disponibilidade, autenticação, limites e uso da tradução dependem do [provedor](https://abibliadigital.api.br/). Se exigido, configure `BIBLE_API_TOKEN` no build. Não há Bíblia offline nem texto simulado de fallback.
-- Fotos são enviadas pelo seletor do aparelho para buckets do Supabase Storage (`eventos`, `galeria`) e exibidas por URL pública. Não há armazenamento privado de fotos.
+- Supabase exige internet. A Bíblia Livre é lida diretamente da edição oficial incluída no APK, inclusive sem rede. A versão 2.3.0 remove a dependência da API bíblica e do token BIBLE_API_TOKEN. O texto local não é fallback de uma tradução diferente; é a única edição usada na leitura atual.
+- Fotos são enviadas pelo seletor para os buckets eventos/galeria. A 2.4.0 usa leitura autenticada; a migração de acesso precisa tornar esses buckets privados no servidor. URLs externas legadas permanecem sob controle dos provedores e devem ser revistas antes de usar fotos privadas.
 - Conclusões de estudos e versículos favoritos ficam neste aparelho, separados por conta, sem sincronização entre aparelhos. Sessões são criptografadas com Android Keystore; backups de dados do app estão desativados.
 - Lembretes são locais (WorkManager), não notificações push. Precisam da permissão de notificações no Android 13+, rede para revalidar o evento e podem atrasar por otimização de bateria. Eventos alterados/cancelados não geram o lembrete antigo; para uma nova data, desative e reative o lembrete. Abrir pelo lembrete navega ao evento.
 - Sem credenciais do projeto, o app abre com estados vazios e instruções de configuração. O banco não é modificado pelo build.

@@ -1,0 +1,398 @@
+[
+  {
+    "name": "Gênesis",
+    "abbreviation": "gn",
+    "code": "GEN",
+    "chapters": 50
+  },
+  {
+    "name": "Êxodo",
+    "abbreviation": "ex",
+    "code": "EXO",
+    "chapters": 40
+  },
+  {
+    "name": "Levítico",
+    "abbreviation": "lv",
+    "code": "LEV",
+    "chapters": 27
+  },
+  {
+    "name": "Números",
+    "abbreviation": "nm",
+    "code": "NUM",
+    "chapters": 36
+  },
+  {
+    "name": "Deuteronômio",
+    "abbreviation": "dt",
+    "code": "DEU",
+    "chapters": 34
+  },
+  {
+    "name": "Josué",
+    "abbreviation": "js",
+    "code": "JOS",
+    "chapters": 24
+  },
+  {
+    "name": "Juízes",
+    "abbreviation": "jz",
+    "code": "JDG",
+    "chapters": 21
+  },
+  {
+    "name": "Rute",
+    "abbreviation": "rt",
+    "code": "RUT",
+    "chapters": 4
+  },
+  {
+    "name": "1º Samuel",
+    "abbreviation": "1sm",
+    "code": "1SA",
+    "chapters": 31
+  },
+  {
+    "name": "2º Samuel",
+    "abbreviation": "2sm",
+    "code": "2SA",
+    "chapters": 24
+  },
+  {
+    "name": "1º Reis",
+    "abbreviation": "1rs",
+    "code": "1KI",
+    "chapters": 22
+  },
+  {
+    "name": "2º Reis",
+    "abbreviation": "2rs",
+    "code": "2KI",
+    "chapters": 25
+  },
+  {
+    "name": "1º Crônicas",
+    "abbreviation": "1cr",
+    "code": "1CH",
+    "chapters": 29
+  },
+  {
+    "name": "2º Crônicas",
+    "abbreviation": "2cr",
+    "code": "2CH",
+    "chapters": 36
+  },
+  {
+    "name": "Esdras",
+    "abbreviation": "ed",
+    "code": "EZR",
+    "chapters": 10
+  },
+  {
+    "name": "Neemias",
+    "abbreviation": "ne",
+    "code": "NEH",
+    "chapters": 13
+  },
+  {
+    "name": "Ester",
+    "abbreviation": "et",
+    "code": "EST",
+    "chapters": 10
+  },
+  {
+    "name": "Jó",
+    "abbreviation": "job",
+    "code": "JOB",
+    "chapters": 42
+  },
+  {
+    "name": "Salmos",
+    "abbreviation": "sl",
+    "code": "PSA",
+    "chapters": 150
+  },
+  {
+    "name": "Provérbios",
+    "abbreviation": "pv",
+    "code": "PRO",
+    "chapters": 31
+  },
+  {
+    "name": "Eclesiastes",
+    "abbreviation": "ec",
+    "code": "ECC",
+    "chapters": 12
+  },
+  {
+    "name": "Cânticos",
+    "abbreviation": "ct",
+    "code": "SOL",
+    "chapters": 8
+  },
+  {
+    "name": "Isaías",
+    "abbreviation": "is",
+    "code": "ISA",
+    "chapters": 66
+  },
+  {
+    "name": "Jeremias",
+    "abbreviation": "jr",
+    "code": "JER",
+    "chapters": 52
+  },
+  {
+    "name": "Lamentações de Jeremias",
+    "abbreviation": "lm",
+    "code": "LAM",
+    "chapters": 5
+  },
+  {
+    "name": "Ezequiel",
+    "abbreviation": "ez",
+    "code": "EZE",
+    "chapters": 48
+  },
+  {
+    "name": "Daniel",
+    "abbreviation": "dn",
+    "code": "DAN",
+    "chapters": 12
+  },
+  {
+    "name": "Oséias",
+    "abbreviation": "os",
+    "code": "HOS",
+    "chapters": 14
+  },
+  {
+    "name": "Joel",
+    "abbreviation": "jl",
+    "code": "JOE",
+    "chapters": 3
+  },
+  {
+    "name": "Amós",
+    "abbreviation": "am",
+    "code": "AMO",
+    "chapters": 9
+  },
+  {
+    "name": "Obadias",
+    "abbreviation": "ob",
+    "code": "OBA",
+    "chapters": 1
+  },
+  {
+    "name": "Jonas",
+    "abbreviation": "jn",
+    "code": "JON",
+    "chapters": 4
+  },
+  {
+    "name": "Miquéias",
+    "abbreviation": "mq",
+    "code": "MIC",
+    "chapters": 7
+  },
+  {
+    "name": "Naum",
+    "abbreviation": "na",
+    "code": "NAH",
+    "chapters": 3
+  },
+  {
+    "name": "Habacuque",
+    "abbreviation": "hc",
+    "code": "HAB",
+    "chapters": 3
+  },
+  {
+    "name": "Sofonias",
+    "abbreviation": "sf",
+    "code": "ZEP",
+    "chapters": 3
+  },
+  {
+    "name": "Ageu",
+    "abbreviation": "ag",
+    "code": "HAG",
+    "chapters": 2
+  },
+  {
+    "name": "Zacarias",
+    "abbreviation": "zc",
+    "code": "ZEC",
+    "chapters": 14
+  },
+  {
+    "name": "Malaquias",
+    "abbreviation": "ml",
+    "code": "MAL",
+    "chapters": 4
+  },
+  {
+    "name": "Mateus",
+    "abbreviation": "mt",
+    "code": "MAT",
+    "chapters": 28
+  },
+  {
+    "name": "Marcos",
+    "abbreviation": "mc",
+    "code": "MAR",
+    "chapters": 16
+  },
+  {
+    "name": "Lucas",
+    "abbreviation": "lc",
+    "code": "LUK",
+    "chapters": 24
+  },
+  {
+    "name": "João",
+    "abbreviation": "jo",
+    "code": "JOH",
+    "chapters": 21
+  },
+  {
+    "name": "Atos",
+    "abbreviation": "at",
+    "code": "ACT",
+    "chapters": 28
+  },
+  {
+    "name": "Romanos",
+    "abbreviation": "rm",
+    "code": "ROM",
+    "chapters": 16
+  },
+  {
+    "name": "1ª Coríntios",
+    "abbreviation": "1co",
+    "code": "1CO",
+    "chapters": 16
+  },
+  {
+    "name": "2ª Coríntios",
+    "abbreviation": "2co",
+    "code": "2CO",
+    "chapters": 13
+  },
+  {
+    "name": "Gálatas",
+    "abbreviation": "gl",
+    "code": "GAL",
+    "chapters": 6
+  },
+  {
+    "name": "Efésios",
+    "abbreviation": "ef",
+    "code": "EPH",
+    "chapters": 6
+  },
+  {
+    "name": "Filipenses",
+    "abbreviation": "fp",
+    "code": "PHI",
+    "chapters": 4
+  },
+  {
+    "name": "Colossenses",
+    "abbreviation": "cl",
+    "code": "COL",
+    "chapters": 4
+  },
+  {
+    "name": "1ª Tessalonicenses",
+    "abbreviation": "1ts",
+    "code": "1TH",
+    "chapters": 5
+  },
+  {
+    "name": "2ª Tessalonicenses",
+    "abbreviation": "2ts",
+    "code": "2TH",
+    "chapters": 3
+  },
+  {
+    "name": "1ª Timóteo",
+    "abbreviation": "1tm",
+    "code": "1TI",
+    "chapters": 6
+  },
+  {
+    "name": "2ª Timóteo",
+    "abbreviation": "2tm",
+    "code": "2TI",
+    "chapters": 4
+  },
+  {
+    "name": "Tito",
+    "abbreviation": "tt",
+    "code": "TIT",
+    "chapters": 3
+  },
+  {
+    "name": "Filemom",
+    "abbreviation": "fm",
+    "code": "PHM",
+    "chapters": 1
+  },
+  {
+    "name": "Hebreus",
+    "abbreviation": "hb",
+    "code": "HEB",
+    "chapters": 13
+  },
+  {
+    "name": "Tiago",
+    "abbreviation": "tg",
+    "code": "JAM",
+    "chapters": 5
+  },
+  {
+    "name": "1ª Pedro",
+    "abbreviation": "1pe",
+    "code": "1PE",
+    "chapters": 5
+  },
+  {
+    "name": "2ª Pedro",
+    "abbreviation": "2pe",
+    "code": "2PE",
+    "chapters": 3
+  },
+  {
+    "name": "1ª João",
+    "abbreviation": "1jo",
+    "code": "1JO",
+    "chapters": 5
+  },
+  {
+    "name": "2ª João",
+    "abbreviation": "2jo",
+    "code": "2JO",
+    "chapters": 1
+  },
+  {
+    "name": "3ª João",
+    "abbreviation": "3jo",
+    "code": "3JO",
+    "chapters": 1
+  },
+  {
+    "name": "Judas",
+    "abbreviation": "jd",
+    "code": "JUD",
+    "chapters": 1
+  },
+  {
+    "name": "Apocalipse",
+    "abbreviation": "ap",
+    "code": "REV",
+    "chapters": 22
+  }
+]

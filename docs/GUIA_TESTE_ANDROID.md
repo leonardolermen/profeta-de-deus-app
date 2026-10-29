@@ -1,10 +1,33 @@
-# Testar no celular — versão 2.2.1
+# Testar no celular — versão 2.4.0
+
+## Preparar a segurança no Supabase
+
+No projeto hospedado atual, o responsável executou `supabase/migrations/20261029000100_acesso_autenticado.sql` em 29/10/2026 e informou sucesso. A verificação REST posterior negou acesso anônimo às nove tabelas. Em outra instalação/projeto, aplicar essa migração depois das anteriores no SQL Editor. A mudança preserva registros, exige conta confirmada, bloqueia visitantes e torna os buckets de fotos privados. APKs antigos deixam de ser compatíveis com envio sem usuário e fotos públicas; atualizar os aparelhos.
+
+## Login obrigatório
+
+Instalar `android-native/app/build/outputs/apk/debug/Profetas-de-Deus-2.4.0-Login.apk` como atualização.
+
+1. Sair da conta: deve aparecer Login sem abas, eventos ou formulário de oração. Voltar e abrir por lembrete/link não devem revelar conteúdo antes de entrar.
+2. Abrir cadastro e recuperação sem conta. Registrar uma conta de teste autorizada, confirmar e-mail e entrar. Conta sem confirmação não deve obter acesso. Qualquer conta confirmada pode entrar; não existe aprovação administrativa nesta etapa.
+3. Como membro, consultar Bíblia/conteúdo, enviar pedido e gerenciar as próprias inscrições. Nenhum botão de edição ou lista de pedidos recebidos deve aparecer.
+4. Como admin, consultar pedidos recebidos e manter as funções de criação/edição. Testar upload e visualização de fotos privadas.
+5. Sair e entrar com outra conta: os dados e a navegação da anterior não devem reaparecer. Testar sessão expirada e reentrada. A Bíblia continua offline para quem já tem sessão local; é preciso internet para o primeiro login e para dados do Supabase.
+6. Verificar que os pedidos novos têm usuario_id da conta que enviou; leitura de pedidos permanece exclusiva de admin. Uma chamada REST anônima deve ser negada após aplicar a migração.
+
+Os roteiros das versões anteriores abaixo registram o histórico; a 2.4.0 substitui a entrada como visitante. Para publicação, seguir `PUBLICACAO_PLAY_STORE.md`, incluindo os itens ainda pendentes.
+
+## Bíblia Livre
+
+A leitura agora usa BLIVRE TR, fevereiro de 2018, com todos os livros e capítulos no APK. Conferir a identificação da tradução, Sobre a tradução e licença e a leitura em modo avião. Testar João 3:16, Salmos 119:105, Tito 3 e Filemom 1. Compartilhar deve incluir os créditos. Favoritos antigos preservam as referências e oferecem Ler na Bíblia Livre; o texto da versão anterior não é reapresentado como BLIVRE. Detalhes em `BIBLIA_LIVRE.md`.
+
+APK atual: `android-native/app/build/outputs/apk/debug/Profetas-de-Deus-2.3.0-Biblia-Livre.apk`. Instalar como atualização, sem desinstalar. Login inicial e aprovação de membros são apenas uma proposta futura; o aplicativo ainda permite entrada como visitante.
 
 ## Mostrar ou ocultar senha
 
 No login, cadastro e alteração de senha, toque em Mostrar ao lado do campo para conferir o que digitou. O botão passa a Ocultar e esconde novamente o texto ao tocar. Nova senha e confirmação têm controles independentes. Os campos começam ocultos; a opção de exibição não é salva ao sair da tela.
 
-Testar digitação, alternância sem perder caracteres, confirmação de senha e fonte ampliada do Android. APK atual: `android-native/app/build/outputs/apk/debug/Profetas-de-Deus-2.2.1.apk`.
+Testar digitação, alternância sem perder caracteres, confirmação de senha e fonte ampliada do Android. APK da versão 2.2.1: `android-native/app/build/outputs/apk/debug/Profetas-de-Deus-2.2.1.apk`.
 
 ## Novidades da versão 2.2.0
 
@@ -19,7 +42,7 @@ Os testes manuais serão feitos no Android físico, por escolha do responsável 
 
 ## Instalar a versão correta
 
-Envie como documento o arquivo `android-native/app/build/outputs/apk/debug/Profetas-de-Deus-2.2.1.apk` e instale como atualização. Confira a versão 2.2.1 nos Ajustes. Não desinstale nem limpe os dados para atualizar: isso pode remover preferências e sessão locais.
+Envie como documento o arquivo `android-native/app/build/outputs/apk/debug/Profetas-de-Deus-2.3.0-Biblia-Livre.apk` e instale como atualização. Confira a versão 2.3.0 nos Ajustes. Não desinstale nem limpe os dados para atualizar: isso pode remover preferências e sessão locais.
 
 ## Bíblia
 
@@ -39,7 +62,7 @@ Envie como documento o arquivo `android-native/app/build/outputs/apk/debug/Profe
 - Avançar e voltar versículos, mudar o capítulo e voltar para a busca usando o botão Voltar do Android.
 - Aumentar a fonte e fechar/reabrir o app; conferir persistência e botões legíveis no S23.
 - Testar os temas claro e escuro e os dois modos de leitura.
-- Sem internet, conferir erro e Tentar novamente. Não existe Bíblia offline nesta versão.
+- Sem internet, conferir que livros e capítulos da Bíblia Livre continuam disponíveis. Conteúdo remoto da igreja ainda depende do Supabase.
 
 ## Administração e criação de eventos
 

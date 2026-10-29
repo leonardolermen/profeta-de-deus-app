@@ -43,7 +43,7 @@ class AccountRepository(private val client: SupabaseClient, scope: CoroutineScop
         val body = JSONObject()
             .put("email", email.trim())
             .put("password", password)
-        client.adoptSession(JSONObject(client.anonymousPost("/auth/v1/token?grant_type=password", body)))
+        acceptConfirmedSession(JSONObject(client.anonymousPost("/auth/v1/token?grant_type=password", body)))
     }
 
     suspend fun register(name: String, email: String, password: String): Boolean {
@@ -57,7 +57,7 @@ class AccountRepository(private val client: SupabaseClient, scope: CoroutineScop
 
         val loggedIn = result.optString("access_token").isNotBlank()
         if (loggedIn) {
-            client.adoptSession(result)
+            acceptConfirmedSession(result)
         }
 
         return loggedIn
@@ -66,6 +66,12 @@ class AccountRepository(private val client: SupabaseClient, scope: CoroutineScop
     suspend fun requestRecovery(email: String) {
         val path = "/auth/v1/recover?redirect_to=profetas%3A%2F%2Fauth%2Frecovery"
         client.post(path, JSONObject().put("email", email.trim()))
+    }
+
+    private fun acceptConfirmedSession(result: JSONObject) {
+        val confirmed = result.getJSONObject("user").optString("email_confirmed_at")
+        check(confirmed.isNotBlank() && confirmed != "null") { "Confirme seu e-mail antes de entrar no aplicativo." }
+        client.adoptSession(result)
     }
 
     suspend fun acceptRecovery(link: String) {

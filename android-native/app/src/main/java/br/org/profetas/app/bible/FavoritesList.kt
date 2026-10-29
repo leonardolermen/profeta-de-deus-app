@@ -20,7 +20,7 @@ import br.org.profetas.app.support.ui.EmptyState
 // Versículos marcados durante a leitura (não existia no Expo; vem da tela Kotlin anterior).
 @Composable
 @OptIn(ExperimentalLayoutApi::class)
-internal fun FavoritesList(favorites: Set<String>, onRemove: (String) -> Unit) {
+internal fun FavoritesList(favorites: Set<String>, onRemove: (String) -> Unit, onOpen: (String) -> Unit) {
     if (favorites.isEmpty()) {
         EmptyState("Marque versículos durante a leitura para encontrá-los aqui.")
 
@@ -41,7 +41,8 @@ internal fun FavoritesList(favorites: Set<String>, onRemove: (String) -> Unit) {
                 )
 
                 Text(
-                    text = FavoriteVerses.textOf(verseKey),
+                    text = if (FavoriteVerses.isCurrentEdition(verseKey)) FavoriteVerses.textOf(verseKey)
+                        else "Referência salva na versão anterior. Abra na Bíblia Livre para ler e favoritar o novo texto.",
                     fontSize = 20.sp,
                     lineHeight = 30.sp,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -51,7 +52,8 @@ internal fun FavoritesList(favorites: Set<String>, onRemove: (String) -> Unit) {
                     modifier = Modifier.padding(top = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(20.dp),
                 ) {
-                    VerseAction(label = "Compartilhar", onClick = { share(context, verseKey) })
+                    VerseAction(label = "Ler na Bíblia Livre", onClick = { onOpen(verseKey) })
+                    if (FavoriteVerses.isCurrentEdition(verseKey)) VerseAction(label = "Compartilhar", onClick = { share(context, BibleEdition.shareText(verseKey)) })
 
                     VerseAction(label = "Remover favorito", onClick = { onRemove(verseKey) })
                 }

@@ -33,6 +33,7 @@ class SupabaseClient(
     val session: Session? get() = mutableSessionState.value
 
     val isConfigured: Boolean get() = config.isUsable
+    suspend fun refreshForImages(previousAccess: String?) { refreshCurrentSession(previousAccess) }
 
     private val refreshLock = Mutex()
 

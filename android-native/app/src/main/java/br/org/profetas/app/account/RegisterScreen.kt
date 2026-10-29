@@ -40,7 +40,7 @@ fun RegisterScreen(viewModel: AccountViewModel, onSignedIn: () -> Unit, onLogin:
         AuthHeader(
             emoji = "✨",
             title = "Junte-se a nós",
-            subtitle = "Crie sua conta para acompanhar seus eventos.",
+            subtitle = "Crie sua conta e confirme seu e-mail para acessar o aplicativo.",
         )
 
         AppTextField(

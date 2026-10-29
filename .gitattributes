@@ -1,0 +1,2 @@
+# Preserve os bytes da edição oficial; o teste confere seu SHA-256 em qualquer sistema.
+android-native/app/src/main/assets/bible/blivre-tr-2018.txt -text -whitespace

@@ -73,10 +73,7 @@ select throws_ok(
 reset request.jwt.claims;
 set local role anon;
 
-select ok(
-  (select count(*) from public.cultos_semanais) >= 1,
-  'cultos_semanais_visitante_le'
-);
+select throws_ok('select * from public.cultos_semanais', '42501', null, 'cultos_semanais_visitante_bloqueado');
 
 select * from finish();
 rollback;

@@ -1,6 +1,6 @@
 package br.org.profetas.app.bible
 
-// Fronteira entre o ViewModel e a API da Bíblia: permite ao teste segurar uma resposta e soltá-la na ordem que quiser.
+// Fronteira entre o ViewModel e o texto bíblico: a implementação atual lê a edição local licenciada.
 interface BibleSource {
 
     suspend fun books(): List<Book>

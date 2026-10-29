@@ -11,7 +11,9 @@ private const val TABLE = "oracoes"
 class PrayerRepository(private val client: SupabaseClient, private val guard: ContentWriteGuard) {
 
     suspend fun send(name: String, text: String) {
+        check(client.session != null) { "Entre na sua conta para enviar um pedido de oração." }
         val body = JSONObject()
+            .put("usuario_id", requireNotNull(client.session).userId)
             .put("nome", name.trim())
             .put("pedido", text.trim())
 

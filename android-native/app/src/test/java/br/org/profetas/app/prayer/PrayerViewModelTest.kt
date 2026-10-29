@@ -32,10 +32,10 @@ import java.util.concurrent.atomic.AtomicInteger
 @OptIn(ExperimentalCoroutinesApi::class)
 class PrayerViewModelTest {
 
-    // Enviar um pedido não exige sessão: qualquer visitante pode orar pelo Expo original.
-    private class VisitorSessionStorage : SessionStorage {
+    // A versão 2.4.0 exige uma conta autenticada para enviar pedidos.
+    private class MemberSessionStorage : SessionStorage {
 
-        override fun load(): Session? = null
+        override fun load(): Session? = Session("A", "R", "member", "member@local.test")
 
         override fun save(session: Session) {
         }
@@ -71,7 +71,7 @@ class PrayerViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
 
         val config = SupabaseConfig("http://127.0.0.1:${server.port}", "anon-key", allowLocalHttp = true)
-        val client = SupabaseClient(config, VisitorSessionStorage(), OkHttpClient())
+        val client = SupabaseClient(config, MemberSessionStorage(), OkHttpClient())
         val guard = ContentWriteGuard(AccountRepository(client, scope))
 
         return PrayerViewModel(prayers = PrayerRepository(client, guard), messages = userMessages)

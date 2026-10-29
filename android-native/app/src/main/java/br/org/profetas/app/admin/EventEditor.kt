@@ -54,7 +54,7 @@ private fun EventFields(
     var type by rememberSaveable { mutableStateOf(event?.type ?: EventType.CULTO) }
     var photo by rememberPhotoIntent()
 
-    val storedUrl = event?.imagePath?.let { path -> StorageBucket.EVENTS.publicUrl(storageBaseUrl, path) }
+    val storedUrl = event?.imagePath?.let { path -> StorageBucket.EVENTS.authenticatedUrl(storageBaseUrl, path) }
 
     EditorColumn(isNew = event == null) {
         AppTextField(label = "Título", value = title, onChange = { input -> title = input.take(MAX_TITLE_INPUT) })

@@ -1,5 +1,7 @@
 # Conexão ao Supabase hospedado — 26/10/2026
 
+> Atualização de 29/10/2026: o responsável aplicou a migração `20261029000100_acesso_autenticado.sql` com sucesso. A conferência posterior negou consultas anônimas às nove tabelas (HTTP 401). As consultas públicas descritas abaixo são evidência histórica anterior à 2.4.0, não a política atual. Conferir `ATUALIZACOES.md`, `03_TAREFAS.md` e `VALIDACAO_ANDROID.md` para estado e pendências atuais.
+
 As três migrações posteriores ao esquema inicial foram executadas manualmente pelo responsável no SQL Editor, com retorno de sucesso. Não executar novamente o esquema inicial ou o seed local neste banco.
 
 ## Verificações realizadas

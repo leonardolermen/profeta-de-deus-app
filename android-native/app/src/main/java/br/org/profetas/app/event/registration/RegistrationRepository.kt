@@ -33,6 +33,7 @@ class RegistrationRepository(private val client: SupabaseClient, private val gua
     }
 
     suspend fun cancel(id: String) {
+        check(client.session != null) { "Entre na sua conta para cancelar uma inscrição." }
         client.deleteRow(TABLE, id)
     }
 

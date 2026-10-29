@@ -51,7 +51,7 @@ fun LoginScreen(
         AuthHeader(
             emoji = "👋",
             title = "Bem-vindo de volta!",
-            subtitle = "Faça login para acessar seu perfil e ver os próximos eventos.",
+            subtitle = "Entre com sua conta para acessar o aplicativo da igreja. Confirme seu e-mail após o cadastro.",
         )
 
         AppTextField(
