@@ -24,13 +24,26 @@ data class BibleState(
     val opened: ChapterRequest? = null,
     val chapter: Chapter? = null,
     val favorites: Set<String> = emptySet(),
+    val selectedVerse: Int = 1,
+    val requestedVerse: Int? = null,
+    val referenceFailure: String? = null,
+    val fontSize: Int = 22,
+    val continuousReading: Boolean = false,
 ) {
     val isBusy: Boolean get() = isLoadingBooks || isLoadingChapter
 }
 
-class BibleViewModel(private val bible: BibleSource, private val favorites: FavoriteVerses) : ViewModel() {
+class BibleViewModel(
+    private val bible: BibleSource,
+    private val favorites: FavoriteVerses,
+    private val readingPreferences: BibleReadingPreferences? = null,
+) : ViewModel() {
 
-    private val mutableState = MutableStateFlow(BibleState(favorites = favorites.all()))
+    private val mutableState = MutableStateFlow(BibleState(
+        favorites = favorites.all(),
+        fontSize = readingPreferences?.fontSize() ?: 22,
+        continuousReading = readingPreferences?.continuous() ?: false,
+    ))
 
     val state: StateFlow<BibleState> = mutableState.asStateFlow()
 
@@ -62,6 +75,16 @@ class BibleViewModel(private val bible: BibleSource, private val favorites: Favo
     }
 
     fun openChapter(book: Book, number: Int) {
+        openPassage(BiblePassage(book, number))
+    }
+
+    fun openPassage(passage: BiblePassage) {
+        val book = passage.book
+        val number = passage.chapter
+        if (number !in 1..book.chapters || (passage.verse != null && passage.verse < 1)) {
+            mutableState.update { it.copy(referenceFailure = "Confira o capítulo e o versículo informados.") }
+            return
+        }
         val generation = ++chapterGeneration
 
         mutableState.update { current ->
@@ -70,6 +93,9 @@ class BibleViewModel(private val bible: BibleSource, private val favorites: Favo
                 failure = null,
                 opened = ChapterRequest(book, number),
                 chapter = null,
+                requestedVerse = passage.verse,
+                selectedVerse = passage.verse ?: 1,
+                referenceFailure = null,
             )
         }
 
@@ -78,7 +104,14 @@ class BibleViewModel(private val bible: BibleSource, private val favorites: Favo
                 val chapter = bible.chapter(book, number)
 
                 if (generation == chapterGeneration) {
-                    mutableState.update { current -> current.copy(isLoadingChapter = false, chapter = chapter) }
+                    val target = chapter.verses.find { it.number == passage.verse }
+                    val missing = passage.verse != null && target == null
+                    mutableState.update { current -> current.copy(
+                        isLoadingChapter = false,
+                        chapter = chapter,
+                        selectedVerse = target?.number ?: chapter.verses.firstOrNull()?.number ?: 1,
+                        referenceFailure = if (missing) "${book.name} $number não possui o versículo ${passage.verse}. Escolha um dos ${chapter.verses.size} versículos deste capítulo." else null,
+                    ) }
                 }
             } catch (e: Exception) {
                 if (e is CancellationException) {
@@ -97,7 +130,7 @@ class BibleViewModel(private val bible: BibleSource, private val favorites: Favo
         chapterGeneration++
 
         mutableState.update { current ->
-            current.copy(isLoadingChapter = false, failure = null, opened = null, chapter = null)
+            current.copy(isLoadingChapter = false, failure = null, referenceFailure = null, opened = null, chapter = null)
         }
     }
 
@@ -108,8 +141,38 @@ class BibleViewModel(private val bible: BibleSource, private val favorites: Favo
         if (opened == null) {
             loadBooks()
         } else {
-            openChapter(opened.book, opened.number)
+            openPassage(BiblePassage(opened.book, opened.number, state.value.selectedVerse))
         }
+    }
+
+    fun selectVerse(number: Int) {
+        val chapter = state.value.chapter ?: return
+        if (chapter.verses.any { it.number == number }) {
+            mutableState.update { it.copy(selectedVerse = number, referenceFailure = null) }
+        }
+    }
+
+    fun moveVerse(offset: Int) {
+        val verses = state.value.chapter?.verses ?: return
+        val index = verses.indexOfFirst { it.number == state.value.selectedVerse }
+        verses.getOrNull(index + offset)?.let { selectVerse(it.number) }
+    }
+
+    fun moveChapter(offset: Int) {
+        val opened = state.value.opened ?: return
+        val number = opened.number + offset
+        if (number in 1..opened.book.chapters) openChapter(opened.book, number)
+    }
+
+    fun changeFontSize(offset: Int) {
+        val size = (state.value.fontSize + offset).coerceIn(18, 32)
+        readingPreferences?.saveFontSize(size)
+        mutableState.update { it.copy(fontSize = size) }
+    }
+
+    fun setContinuousReading(value: Boolean) {
+        readingPreferences?.saveContinuous(value)
+        mutableState.update { it.copy(continuousReading = value) }
     }
 
     fun toggleFavorite(verseKey: String) {
@@ -131,7 +194,11 @@ class BibleViewModel(private val bible: BibleSource, private val favorites: Favo
 
                 val container = application.container
 
-                BibleViewModel(bible = container.bible, favorites = container.favoriteVerses)
+                BibleViewModel(
+                    bible = container.bible,
+                    favorites = container.favoriteVerses,
+                    readingPreferences = BibleReadingPreferences(application.getSharedPreferences("preferences", 0)),
+                )
             }
         }
     }

@@ -28,6 +28,7 @@ fun NavGraphBuilder.adminDestinations(
     adminViewModel: AdminViewModel,
     accountViewModel: AccountViewModel,
     navigator: Navigator,
+    onEventsChanged: () -> Unit = {},
 ) {
     val baseUrl = container.storageBaseUrl
     val back = navigator::back
@@ -37,11 +38,17 @@ fun NavGraphBuilder.adminDestinations(
     }
 
     admin(Route.EventEditor.PATTERN, container, adminViewModel, accountViewModel) { entry ->
-        EventEditor(entry.recordId(), adminViewModel, baseUrl, back)
+        EventEditor(entry.recordId(), adminViewModel, baseUrl) {
+            onEventsChanged()
+            back()
+        }
     }
 
     admin(Route.WeeklyServiceEditor.PATTERN, container, adminViewModel, accountViewModel) { entry ->
-        WeeklyServiceEditor(entry.recordId(), adminViewModel, back)
+        WeeklyServiceEditor(entry.recordId(), adminViewModel) {
+            onEventsChanged()
+            back()
+        }
     }
 
     admin(Route.StudyEditor.PATTERN, container, adminViewModel, accountViewModel) { entry ->

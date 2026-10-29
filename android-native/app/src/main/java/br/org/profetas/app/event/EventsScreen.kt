@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -40,7 +42,7 @@ import br.org.profetas.app.support.ui.SearchBox
 // Aba Eventos, a partir de app/(tabs)/eventos.tsx: as medidas (margens, fontes, raios) são as do StyleSheet de lá.
 // O Expo não filtrava a busca nem tinha tipos e eventos passados; os filtros vêm da tela Kotlin anterior.
 @Composable
-fun EventsScreen(viewModel: EventsViewModel, storageBaseUrl: String, onNavigate: (Route) -> Unit) {
+fun EventsScreen(viewModel: EventsViewModel, storageBaseUrl: String, onNavigate: (Route) -> Unit, canManage: Boolean = false) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     var query by rememberSaveable { mutableStateOf("") }
@@ -60,6 +62,13 @@ fun EventsScreen(viewModel: EventsViewModel, storageBaseUrl: String, onNavigate:
     ) {
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
             Header(onNavigate)
+
+            if (canManage) {
+                Button(onClick = { onNavigate(Route.EventEditor(Route.NEW_RECORD)) },
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).heightIn(min = 56.dp)) {
+                    Text("Criar novo evento", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
+            }
 
             SearchBox(
                 value = query,

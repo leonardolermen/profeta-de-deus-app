@@ -2,6 +2,31 @@
 
 Aplicativo Kotlin + Jetpack Compose. Abra **esta pasta** no Android Studio. Não é necessário Node, Expo ou uma conta Apple para compilar o Android. O backend fica em `../supabase/` (veja o README da raiz).
 
+## Atualização 2.2.1 — 29/10/2026
+
+- Mostrar/Ocultar senha no login, cadastro, nova senha e confirmação. Botão textual com área de toque mínima de 48 dp e descrição para leitor de tela; os campos começam ocultos e a senha continua fora do estado persistido.
+- APK: `app/build/outputs/apk/debug/Profetas-de-Deus-2.2.1.apk`. Conferir no celular a alternância durante a digitação, sem perder o texto.
+
+## Atualização 2.2.0 — 29/10/2026
+
+- Lista de livros visível na Bíblia, filtrada pela pesquisa, junto dos campos de capítulo e versículo e da leitura introduzidos na 2.1.0.
+- Início > Oração reúne o formulário pessoal e, somente para administradores, a lista de pedidos recebidos com atualização. O cargo é revalidado ao consultar; sair ou trocar de conta limpa os pedidos locais.
+- APK: `app/build/outputs/apk/debug/Profetas-de-Deus-2.2.0.apk`. Validação visual no celular ainda pendente.
+- Pesquisa sobre API e licença da Harpa Cristã: `../docs/PESQUISA_HARPA_CRISTA.md`. Nenhuma integração foi adicionada por falta de autorização de redistribuição comprovada para o catálogo.
+
+## Atualização 2.1.0 — 29/10/2026
+
+- Busca de livro sem depender de acentos, com campos diretos de capítulo e versículo.
+- Leitura separada da seleção: não é necessário rolar pela grade de capítulos antes de chegar ao texto.
+- Modo Por versículo com Anterior/Próximo fixos, ou Capítulo inteiro com leitura contínua. Toque no texto para selecionar o versículo usado nas ações de favoritar e compartilhar.
+- Fonte ajustável entre 18 e 32 sp, com modo de leitura e tamanho salvos no aparelho.
+- Criar novo evento destacado em Ajustes, Eventos e Administração > Agenda, somente para contas administradoras. Os bloqueios de permissão continuam nos editores, repositórios e banco.
+- A agenda é atualizada depois de salvar evento ou culto semanal.
+
+Os testes manuais desta atualização serão feitos no celular, sem manter emulador aberto no computador. O build usa menos memória e dois workers. O roteiro e as pendências estão em `../docs/GUIA_TESTE_ANDROID.md`. A validação histórica da versão anterior em emulador, registrada abaixo, não comprova a interface nova.
+
+APK de teste desta atualização: `app/build/outputs/apk/debug/Profetas-de-Deus-2.1.0-Biblia.apk`.
+
 ## Situação atual
 
 O app foi validado de ponta a ponta contra o **Supabase local** (Docker) em emulador Android API 36, em 26/10/2026. O registro item a item, com evidências e a falha encontrada e corrigida, está em `../docs/VALIDACAO_ANDROID.md`.

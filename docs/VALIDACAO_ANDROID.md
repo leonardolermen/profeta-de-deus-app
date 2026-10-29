@@ -1,3 +1,33 @@
+# Validação da versão 2.2.1 — 29/10/2026
+
+- APK debug compilado com sucesso, versionCode 5 e versionName 2.2.1. Cópia `Profetas-de-Deus-2.2.1.apk` com hash idêntico ao APK gerado.
+- 131 testes JUnit sem falhas ou erros. Android Lint sem erros.
+- Mostrar/Ocultar aplicado aos quatro campos: login, cadastro, nova senha e confirmação. Área de toque mínima de 48 dp, rótulo textual e descrição acessível. As senhas continuam fora do estado salvo da Activity.
+- A interação visual e a digitação com teclado do aparelho ainda precisam de teste no celular; não foram executados testes de interface nesta atualização.
+
+---
+
+# Validação da versão 2.2.0 — 29/10/2026
+
+- Compilação debug concluída, versionCode 4 e versionName 2.2.0. APK de 18,8 MiB em `Profetas-de-Deus-2.2.0.apk`, cópia com hash idêntico ao original gerado pelo Gradle.
+- 131 testes JUnit sem falhas ou erros. Quatro testes novos conferem bloqueio de leitura para membro, limpeza dos pedidos no logout e troca de administrador, e bloqueio quando o cargo remoto foi revogado apesar do perfil local antigo.
+- Android Lint: zero erros e 30 avisos. `git diff --check` sem erros de espaço em branco.
+- Verificação dos arquivos alterados não encontrou padrões de credenciais privadas. `local.properties` e APK continuam ignorados pelo Git.
+- A lista visível de livros com pesquisa e a área de pedidos recebidos ainda precisam de validação no celular. Nenhum pedido real foi lido ou criado durante estes testes; foram usados servidores simulados nos testes JUnit. O emulador permaneceu fechado.
+
+---
+
+# Validação da versão 2.1.0 — 29/10/2026
+
+- APK debug compilado com sucesso, versionCode 3 e versionName 2.1.0.
+- 127 testes JUnit executados, sem falhas ou erros, incluindo busca de referências bíblicas, navegação e preferências de leitura.
+- Android Lint: zero erros e 30 avisos.
+- A cópia `Profetas-de-Deus-2.1.0-Biblia.apk` tem o mesmo SHA-256 do APK gerado pelo Gradle.
+- Configuração local e APK permanecem ignorados pelo Git. A revisão de credenciais dos fontes não encontrou vazamentos.
+- O emulador foi encerrado. A validação visual da nova Bíblia e a criação de eventos com administrador ficam pendentes no celular, seguindo `GUIA_TESTE_ANDROID.md`. Estes resultados automatizados não comprovam esses fluxos no aparelho.
+
+---
+
 # Validação da versão Android — 21/10/2026
 
 > Superado pela seção "Validação funcional da versão Kotlin — 26/10/2026", mais abaixo: os testes em emulador e a negação de chamadas REST no banco, tratados como pendentes aqui, foram executados contra o Supabase local. O texto desta seção fica como registro do estado em 21/10.

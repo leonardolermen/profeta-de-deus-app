@@ -7,6 +7,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import br.org.profetas.app.ProfetasApplication
+import br.org.profetas.app.account.Profile
+import br.org.profetas.app.account.ContentAccess
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import br.org.profetas.app.support.message.UserMessages
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.BufferOverflow
@@ -25,13 +30,48 @@ const val MAX_NAME_LENGTH = 120
 const val MIN_TEXT_LENGTH = 5
 const val MAX_TEXT_LENGTH = 4000
 
-data class PrayerState(val sending: Boolean = false)
+data class PrayerState(
+    val sending: Boolean = false,
+    val canManage: Boolean = false,
+    val received: List<Prayer> = emptyList(),
+    val loading: Boolean = false,
+    val failure: String? = null,
+)
 
-class PrayerViewModel(private val prayers: PrayerRepository, private val messages: UserMessages) : ViewModel() {
+class PrayerViewModel(
+    private val prayers: PrayerRepository,
+    private val messages: UserMessages,
+    profiles: Flow<Profile?> = flowOf(null),
+) : ViewModel() {
 
     private val mutableState = MutableStateFlow(PrayerState())
 
     val state: StateFlow<PrayerState> = mutableState.asStateFlow()
+    private var receivedJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            profiles.collect { profile ->
+                receivedJob?.cancel()
+                mutableState.update { it.copy(canManage = ContentAccess.canManage(profile), received = emptyList(), loading = false, failure = null) }
+            }
+        }
+    }
+
+    fun loadReceived() {
+        if (!state.value.canManage || state.value.loading) return
+        mutableState.update { it.copy(loading = true, failure = null) }
+        receivedJob = viewModelScope.launch {
+            try {
+                val received = prayers.all()
+                mutableState.update { it.copy(received = received, loading = false) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                mutableState.update { it.copy(received = emptyList(), loading = false, failure = e.message ?: "Não foi possível carregar os pedidos.") }
+            }
+        }
+    }
 
     // Evento de disparo único: o PrayerViewModel é criado uma vez em ProfetasApp e sobrevive à navegação, então um
     // campo "sent" no state ficaria preso em true e mandaria de volta sozinho em toda visita seguinte à tela. Um
@@ -85,7 +125,7 @@ class PrayerViewModel(private val prayers: PrayerRepository, private val message
 
                 val container = application.container
 
-                PrayerViewModel(prayers = container.prayers, messages = container.userMessages)
+                PrayerViewModel(prayers = container.prayers, messages = container.userMessages, profiles = container.account.currentProfile)
             }
         }
     }

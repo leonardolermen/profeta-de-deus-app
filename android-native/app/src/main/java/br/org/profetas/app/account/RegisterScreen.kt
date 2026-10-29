@@ -12,7 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import br.org.profetas.app.support.ui.PasswordField
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.org.profetas.app.support.ui.AppTextField
@@ -65,13 +65,11 @@ fun RegisterScreen(viewModel: AccountViewModel, onSignedIn: () -> Unit, onLogin:
             modifier = Modifier.padding(top = 20.dp),
         )
 
-        AppTextField(
+        PasswordField(
             label = "Senha",
             value = password,
             onChange = { input -> password = input },
             placeholder = "Crie uma senha forte",
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            visualTransformation = PasswordVisualTransformation(),
             cornerRadius = 16.dp,
             modifier = Modifier.padding(top = 20.dp),
         )

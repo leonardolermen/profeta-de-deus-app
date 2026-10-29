@@ -47,7 +47,7 @@ class AdminViewModelTest {
 
     private class VisitorSessionStorage : SessionStorage {
 
-        override fun load(): Session? = null
+        override fun load(): Session? = Session("A", "R", "admin-a", "admin@local.test")
 
         override fun save(session: Session) {
         }
@@ -64,6 +64,7 @@ class AdminViewModelTest {
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val path = request.path.orEmpty()
+                if (path.contains("perfis")) return MockResponse().setBody("""[{"id":"admin-a","nome":"Admin","role":"admin"}]""")
 
                 if (!path.contains("oracoes")) {
                     return MockResponse().setResponseCode(200).setBody("[]")

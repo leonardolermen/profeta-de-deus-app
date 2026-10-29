@@ -11,7 +11,7 @@ import br.org.profetas.app.birthday.BirthdaysViewModel
 import br.org.profetas.app.prayer.PrayerScreen
 import br.org.profetas.app.prayer.PrayerViewModel
 
-// Oração e Aniversariantes, alcançadas pelos atalhos da Início. Oração é só formulário, sem dado para recarregar;
+// Oração e Aniversariantes, alcançadas pelos atalhos da Início.
 // Aniversariantes recarrega ao entrar ou sair da conta, porque a RLS só devolve linhas para quem está logado.
 fun NavGraphBuilder.communityDestinations(
     container: AppContainer,

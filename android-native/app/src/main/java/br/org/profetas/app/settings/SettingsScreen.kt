@@ -4,6 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -103,6 +109,23 @@ private fun AccountSection(accountViewModel: AccountViewModel, onNavigate: (Rout
             SettingsDivider()
 
             LinkRow("Administração") { onNavigate(Route.Admin) }
+        }
+    }
+
+    if (isAdmin) {
+        OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Painel do administrador", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text("Crie eventos e gerencie estudos, fotos e informações da igreja.", fontSize = 17.sp)
+                Button(onClick = { onNavigate(Route.EventEditor(Route.NEW_RECORD)) },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                    Text("Criar novo evento", fontSize = 18.sp)
+                }
+                OutlinedButton(onClick = { onNavigate(Route.Admin) },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
+                    Text("Ver todas as funções", fontSize = 17.sp)
+                }
+            }
         }
     }
 }

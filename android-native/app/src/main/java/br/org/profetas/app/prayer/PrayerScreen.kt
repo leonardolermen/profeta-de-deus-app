@@ -15,6 +15,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.FilterChip
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.heightIn
+import br.org.profetas.app.event.displayDate
+import br.org.profetas.app.support.ui.LoadFailure
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,6 +51,12 @@ fun PrayerScreen(viewModel: PrayerViewModel, onBack: () -> Unit) {
 
     var name by rememberSaveable { mutableStateOf("") }
     var text by rememberSaveable { mutableStateOf("") }
+    var showingReceived by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(state.canManage, showingReceived) {
+        if (state.canManage && showingReceived) viewModel.loadReceived()
+        if (!state.canManage) showingReceived = false
+    }
 
     // O Expo fecha a tela com um Alerta ao confirmar; aqui a mensagem já sai pelo snackbar, então o pedido
     // enviado com sucesso volta sozinho para quem chamou a tela (o atalho "Oração" da Início). `sent` é um
@@ -64,6 +78,31 @@ fun PrayerScreen(viewModel: PrayerViewModel, onBack: () -> Unit) {
             .verticalScroll(rememberScrollState())
             .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 40.dp),
     ) {
+        if (state.canManage) {
+            Text("Orações", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                FilterChip(selected = !showingReceived, onClick = { showingReceived = false }, label = { Text("Pedir oração") }, modifier = Modifier.heightIn(min = 48.dp))
+                FilterChip(selected = showingReceived, onClick = { showingReceived = true }, label = { Text("Pedidos recebidos") }, modifier = Modifier.heightIn(min = 48.dp))
+            }
+        }
+
+        if (state.canManage && showingReceived) {
+            Text("Pedidos à equipe pastoral", fontSize = 23.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 16.dp))
+            Text("Visível somente para administradores.", fontSize = 16.sp, modifier = Modifier.padding(vertical = 12.dp))
+            OutlinedButton(onClick = viewModel::loadReceived, enabled = !state.loading, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) { Text("Atualizar pedidos", fontSize = 18.sp) }
+            if (state.loading) CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+            state.failure?.let { LoadFailure(it, viewModel::loadReceived) }
+            if (!state.loading && state.failure == null && state.received.isEmpty()) Text("Nenhum pedido recebido.", modifier = Modifier.padding(vertical = 20.dp), fontSize = 18.sp)
+            state.received.forEach { prayer ->
+                OutlinedCard(modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(prayer.name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text(displayDate(prayer.date), fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(prayer.text, fontSize = 20.sp, lineHeight = 30.sp, modifier = Modifier.padding(top = 12.dp))
+                    }
+                }
+            }
+        } else {
         Header()
 
         AppTextField(
@@ -97,6 +136,7 @@ fun PrayerScreen(viewModel: PrayerViewModel, onBack: () -> Unit) {
             onClick = { viewModel.send(name, text) },
             modifier = Modifier.padding(top = 26.dp),
         )
+        }
     }
 }
 

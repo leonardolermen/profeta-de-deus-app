@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -34,6 +35,58 @@ class BibleViewModelTest {
     }
 
     private val psalms = Book(name = "Salmos", abbreviation = "sl", chapters = 150)
+
+    private fun immediateSource() = object : BibleSource {
+        override suspend fun books() = listOf(psalms)
+        override suspend fun chapter(book: Book, number: Int) = Chapter(book.name, number,
+            listOf(Verse(1, "Primeiro"), Verse(2, "Segundo"), Verse(3, "Terceiro")))
+    }
+
+    @Test fun opensTheRequestedVerseWithoutScrollingThroughEarlierChapters() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val vm = BibleViewModel(immediateSource(), FavoriteVerses(InMemoryPreferences()) { "visitante" })
+        vm.openPassage(BiblePassage(psalms, 119, 3))
+        advanceUntilIdle()
+        assertEquals(119, vm.state.value.chapter?.number)
+        assertEquals(3, vm.state.value.selectedVerse)
+    }
+
+    @Test fun absentVerseProducesHelpfulFeedbackAndKeepsChapterReadable() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val vm = BibleViewModel(immediateSource(), FavoriteVerses(InMemoryPreferences()) { "visitante" })
+        vm.openPassage(BiblePassage(psalms, 119, 999))
+        advanceUntilIdle()
+        assertEquals(1, vm.state.value.selectedVerse)
+        assertTrue(vm.state.value.referenceFailure.orEmpty().contains("999"))
+        assertEquals(3, vm.state.value.chapter?.verses?.size)
+    }
+
+    @Test fun verseNavigationStopsAtChapterBoundaries() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val vm = BibleViewModel(immediateSource(), FavoriteVerses(InMemoryPreferences()) { "visitante" })
+        vm.openChapter(psalms, 1)
+        advanceUntilIdle()
+        vm.moveVerse(-1)
+        assertEquals(1, vm.state.value.selectedVerse)
+        repeat(5) { vm.moveVerse(1) }
+        assertEquals(3, vm.state.value.selectedVerse)
+        vm.moveVerse(-1)
+        assertEquals(2, vm.state.value.selectedVerse)
+    }
+
+    @Test fun readingPreferencesSurviveAnotherViewModelAndFontSizeHasLimits() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val preferences = InMemoryPreferences()
+        val favorites = FavoriteVerses(preferences) { "visitante" }
+        val vm = BibleViewModel(immediateSource(), favorites, BibleReadingPreferences(preferences))
+        vm.changeFontSize(100)
+        vm.setContinuousReading(true)
+        val reopened = BibleViewModel(immediateSource(), favorites, BibleReadingPreferences(preferences))
+        assertEquals(32, reopened.state.value.fontSize)
+        assertTrue(reopened.state.value.continuousReading)
+        reopened.changeFontSize(-100)
+        assertEquals(18, reopened.state.value.fontSize)
+    }
 
     @After fun resetMain() {
         Dispatchers.resetMain()

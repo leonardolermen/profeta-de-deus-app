@@ -22,6 +22,7 @@ import androidx.navigation.compose.rememberNavController
 import br.org.profetas.app.AppContainer
 import br.org.profetas.app.account.AccountEvent
 import br.org.profetas.app.account.AccountViewModel
+import br.org.profetas.app.account.ContentAccess
 import br.org.profetas.app.admin.AdminViewModel
 import br.org.profetas.app.bible.BibleViewModel
 import br.org.profetas.app.birthday.BirthdaysViewModel
@@ -189,6 +190,7 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
                             viewModel = eventsViewModel,
                             storageBaseUrl = container.storageBaseUrl,
                             onNavigate = navigator::go,
+                            canManage = ContentAccess.canManage(profile),
                         )
                     }
 
@@ -204,7 +206,7 @@ fun ProfetasApp(container: AppContainer, initialRoute: Route?, recoveryLink: Str
 
                     accountDestinations(accountViewModel, navigator)
 
-                    adminDestinations(container, adminViewModel, accountViewModel, navigator)
+                    adminDestinations(container, adminViewModel, accountViewModel, navigator, eventsViewModel::reload)
 
                     settingsDestinations(settingsViewModel, accountViewModel, navigator)
                 }

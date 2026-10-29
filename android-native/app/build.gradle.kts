@@ -18,8 +18,8 @@ android {
         applicationId = "com.jlpsd.telasongmtdgky8qavduwwg50shqb"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "2.0.0"
+        versionCode = 5
+        versionName = "2.2.1"
         buildConfigField("String", "SUPABASE_URL", "\"${config("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${config("SUPABASE_ANON_KEY")}\"")
         buildConfigField("String", "BIBLE_API_TOKEN", "\"${config("BIBLE_API_TOKEN")}\"")

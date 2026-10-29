@@ -1,7 +1,6 @@
 package br.org.profetas.app.account
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -12,8 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import br.org.profetas.app.support.ui.PasswordField
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -102,21 +100,17 @@ private fun PasswordCard(viewModel: AccountViewModel) {
     SectionCard {
         SectionTitle(title = "Alterar senha")
 
-        AppTextField(
+        PasswordField(
             label = "Nova senha",
             value = password,
             onChange = { input -> password = input },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.padding(top = 16.dp),
         )
 
-        AppTextField(
+        PasswordField(
             label = "Repita a nova senha",
             value = confirmation,
             onChange = { input -> confirmation = input },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.padding(top = 16.dp),
         )
 

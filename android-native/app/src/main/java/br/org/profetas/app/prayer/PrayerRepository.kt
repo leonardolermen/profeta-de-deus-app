@@ -18,8 +18,10 @@ class PrayerRepository(private val client: SupabaseClient, private val guard: Co
         client.post("/rest/v1/$TABLE", body)
     }
 
-    suspend fun all(): List<Prayer> =
-        client.rows(TABLE, "select=*&order=criado_em.desc").map { row -> row.toPrayer() }
+    suspend fun all(): List<Prayer> {
+        guard.requireAdmin()
+        return client.rows(TABLE, "select=*&order=criado_em.desc").map { row -> row.toPrayer() }
+    }
 
     suspend fun delete(id: String) {
         guard.requireAdmin()

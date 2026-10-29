@@ -18,7 +18,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import br.org.profetas.app.support.ui.PasswordField
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,13 +66,11 @@ fun LoginScreen(
             cornerRadius = 16.dp,
         )
 
-        AppTextField(
+        PasswordField(
             label = "Senha",
             value = password,
             onChange = { input -> password = input },
             placeholder = "Sua senha secreta",
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            visualTransformation = PasswordVisualTransformation(),
             cornerRadius = 16.dp,
             modifier = Modifier.padding(top = 20.dp),
         )

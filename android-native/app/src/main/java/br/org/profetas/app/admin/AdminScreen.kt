@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +32,6 @@ import br.org.profetas.app.event.displayDate
 import br.org.profetas.app.navigation.Route
 import br.org.profetas.app.support.ui.EmptyState
 import br.org.profetas.app.support.ui.LoadFailure
-import br.org.profetas.app.support.ui.PrimaryButton
 import br.org.profetas.app.support.ui.ScreenColumn
 import br.org.profetas.app.support.ui.SearchBox
 
@@ -75,7 +76,16 @@ fun AdminScreen(viewModel: AdminViewModel, onNavigate: (Route) -> Unit) {
         SearchBox(value = query, onChange = { text -> query = text }, placeholder = "Buscar nesta seção")
 
         section.newRecord?.let { route ->
-            PrimaryButton(label = "Novo cadastro", onClick = { onNavigate(route) })
+            Button(onClick = { onNavigate(route) }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                Text(when (section) {
+                    AdminSection.EVENTS -> "Criar novo evento"
+                    AdminSection.WEEKLY_SERVICES -> "Adicionar culto semanal"
+                    AdminSection.STUDIES -> "Adicionar estudo"
+                    AdminSection.PHOTOS -> "Adicionar foto"
+                    AdminSection.BIRTHDAYS -> "Adicionar aniversariante"
+                    else -> "Novo cadastro"
+                }, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
         }
 
         state.failure?.let { failure ->

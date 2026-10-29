@@ -2,7 +2,8 @@ package br.org.profetas.app.bible
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,6 +19,7 @@ import br.org.profetas.app.support.ui.EmptyState
 
 // Versículos marcados durante a leitura (não existia no Expo; vem da tela Kotlin anterior).
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 internal fun FavoritesList(favorites: Set<String>, onRemove: (String) -> Unit) {
     if (favorites.isEmpty()) {
         EmptyState("Marque versículos durante a leitura para encontrá-los aqui.")
@@ -32,7 +34,7 @@ internal fun FavoritesList(favorites: Set<String>, onRemove: (String) -> Unit) {
             BorderedCard {
                 Text(
                     text = FavoriteVerses.referenceOf(verseKey),
-                    fontSize = 13.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(bottom = 8.dp),
@@ -40,12 +42,12 @@ internal fun FavoritesList(favorites: Set<String>, onRemove: (String) -> Unit) {
 
                 Text(
                     text = FavoriteVerses.textOf(verseKey),
-                    fontSize = 16.sp,
-                    lineHeight = 24.sp,
+                    fontSize = 20.sp,
+                    lineHeight = 30.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
-                Row(
+                FlowRow(
                     modifier = Modifier.padding(top = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(20.dp),
                 ) {
