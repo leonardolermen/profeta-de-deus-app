@@ -58,6 +58,7 @@ Histórico completo das mudanças: **[ATUALIZACOES.md](docs/ATUALIZACOES.md)**. 
 
 ## Possíveis melhorias futuras
 
+- Avaliar uma versão web para notebook com modo de projeção da Bíblia em TV/projetor: pesquisa e controles no notebook, passagem em tela cheia na segunda tela, letras grandes, alto contraste e navegação pelo teclado. Proposta ainda não implementada, sem prazo ou compromisso de execução; depende da decisão da equipe e da igreja e da avaliação de equipamentos, custos e manutenção. Detalhes em [PROPOSTA_PROJECAO_BIBLIA.md](docs/PROPOSTA_PROJECAO_BIBLIA.md).
 - Avaliar convite ou aprovação administrativa para restringir o cadastro a membros conhecidos da igreja, com estado pendente e revogação de acesso. Não exigido na versão atual por decisão do responsável. Aprovação de membro não concede cargo de administrador.
 - Separar a lista de livros da Bíblia em Antigo Testamento (39 livros) e Novo Testamento (27 livros), mantendo a pesquisa nos dois grupos.
 - Permitir escolher a tradução bíblica, incluindo opções de linguagem mais antiga e mais atual, conforme as versões disponíveis na API e a autorização de uso de cada tradução. A tradução é independente da divisão por testamento: cada versão contém ambos.

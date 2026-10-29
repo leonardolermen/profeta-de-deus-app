@@ -41,6 +41,7 @@ Atualizado em 29/10/2026. Histórico por versão em `ATUALIZACOES.md`, evidênci
 
 ## Melhorias futuras, ainda não implementadas
 
+- Versão web para notebook com modo de projeção da Bíblia em TV/projetor, controles separados e navegação pelo teclado. Apenas possibilidade para avaliação da equipe e da igreja; sem aprovação de execução ou prazo. Escopo e viabilidade em `PROPOSTA_PROJECAO_BIBLIA.md`.
 - Separar os livros em Antigo/Novo Testamento mantendo a pesquisa.
 - Seletor de outras traduções, somente com licença e edição verificadas. TR/N4 da BLIVRE não são opções de linguagem antiga/moderna.
 - Convite/aprovação para permitir apenas membros conhecidos: adiado por decisão do responsável.
