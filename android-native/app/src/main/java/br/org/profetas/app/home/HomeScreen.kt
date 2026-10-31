@@ -114,6 +114,12 @@ fun HomeScreen(
             onOpen = { event -> onNavigate(Route.EventDetail(event.id)) },
         )
 
+        PrimaryButton(
+            label = "Indicações",
+            onClick = { onNavigate(Route.Recommendations) },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 18.dp),
+        )
+
         WhereToFindUs(address = churchState.church.address)
 
         Text(

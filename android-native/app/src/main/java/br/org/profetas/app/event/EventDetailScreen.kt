@@ -55,6 +55,7 @@ fun EventDetailScreen(
     storageBaseUrl: String,
     userMessages: UserMessages,
     onNavigate: (Route) -> Unit,
+    canManage: Boolean = false,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -84,6 +85,13 @@ fun EventDetailScreen(
 
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)) {
             Summary(event)
+
+            if (canManage) {
+                androidx.compose.material3.OutlinedButton(
+                    onClick = { onNavigate(Route.EventRegistrations(event.id)) },
+                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                ) { Text("Ver inscritos neste evento", fontSize = 18.sp) }
+            }
 
             if (isFuture(event.date)) {
                 Actions(

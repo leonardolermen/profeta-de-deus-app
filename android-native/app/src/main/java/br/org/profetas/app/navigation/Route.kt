@@ -27,6 +27,25 @@ sealed interface Route {
         override val title = "Eventos"
     }
 
+    data object Recommendations : Route {
+        override val path = "recommendations"
+        override val title = "Indicações"
+    }
+
+    data class RecommendationEditor(val id: String) : Route {
+        override val path = "admin/recommendation/$id"
+        override val title = "Indicação"
+        override val pattern = PATTERN
+        companion object { const val PATTERN = "admin/recommendation/{id}" }
+    }
+
+    data class EventRegistrations(val id: String) : Route {
+        override val path = "admin/registrations/$id"
+        override val title = "Inscritos no evento"
+        override val pattern = PATTERN
+        companion object { const val PATTERN = "admin/registrations/{id}" }
+    }
+
     data object Settings : Route {
         override val path = "settings"
         override val title = "Ajustes"
@@ -202,7 +221,7 @@ sealed interface Route {
 
         private val withoutArguments: List<Route> = listOf(
             Home, Bible, Events, Settings, Prayer, Campaigns, Baptism, Birthdays, Studies, Gallery, History,
-            Contact, Privacy, Login, Register, Recovery, Profile, MyRegistrations, Admin, ChurchEditor,
+            Contact, Privacy, Login, Register, Recovery, Profile, MyRegistrations, Admin, ChurchEditor, Recommendations,
         )
 
         fun fromPath(path: String): Route? {
@@ -230,6 +249,8 @@ sealed interface Route {
         }
 
         private fun adminEditor(kind: String, id: String): Route? = when (kind) {
+            "recommendation" -> RecommendationEditor(id)
+            "registrations" -> EventRegistrations(id)
             "event" -> EventEditor(id)
             "weekly" -> WeeklyServiceEditor(id)
             "study" -> StudyEditor(id)

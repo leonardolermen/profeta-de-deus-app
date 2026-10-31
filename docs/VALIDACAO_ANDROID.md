@@ -1,3 +1,16 @@
+# Validação da versão 2.5.0 — 31/10/2026
+
+- APK debug gerado com versionName 2.5.0 e versionCode 8: `android-native/app/build/outputs/apk/debug/Profetas-de-Deus-2.5.0-Indicacoes.apk`, 20,69 MiB, hash idêntico ao `app-debug.apk` gerado. Instalar como atualização no celular.
+- Execução final de assembleDebug, testDebugUnitTest e lintDebug concluída com sucesso. Lint: 0 erros e 31 avisos; git diff --check sem erros de espaço em branco.
+- 156 testes JUnit aprovados, zero falhas/erros/ignorados. Novos casos cobrem data brasileira, retorno da data salva no fuso local, datas/horas inválidas, ano bissexto e máscaras numéricas; leitura de indicações, cadastro/edição por admin, bloqueio das três escritas para membro e rejeição de links inseguros. Requisições desses testes usam servidor simulado, sem registros reais.
+- Revisão de 266 arquivos de texto versionáveis não encontrou valores das credenciais locais nem padrões de JWT, chaves privadas ou conexões PostgreSQL com senha. Configuração local e APK continuam ignorados pelo Git.
+- O texto BLIVRE extraído do APK mantém o SHA-256 oficial registrado em `BIBLIA_LIVRE.md`. Não houve troca de tradução ou alteração de licença nesta atualização.
+- O responsável executou `20261031000100_indicacoes.sql` no Supabase e informou “Success. No rows returned”. Consulta REST anônima `select=id&limit=0` à nova tabela retornou HTTP 401; não leu dados pessoais nem criou registros.
+- Sintaxe externa da migração e do teste `indicacoes_test.sql` conferida com pglast. O teste pgTAP contém 12 cenários de permissões das indicações e isolamento das inscrições, mas **não foi executado** nesta etapa: não foi iniciado Docker nem emulador. Os comandos SQL em texto no pgTAP não são executados pelo parser.
+- Em 31/10/2026, o responsável aprovou a versão 2.5.0 após o teste no celular: “está do jeito que eu queria”. Registro de aprovação geral da atualização; não foi apresentado resultado individual dos cenários de segurança, acessibilidade e falhas de rede. Os cenários detalhados sem resultado registrado continuam no roteiro `GUIA_TESTE_ANDROID.md`; os testes JVM não os substituem.
+
+---
+
 # Validação da versão 2.4.0 — 29/10/2026
 
 - APK debug compilado com sucesso, versionCode 7 e versionName 2.4.0. Cópia `Profetas-de-Deus-2.4.0-Login.apk` com hash idêntico ao APK gerado.

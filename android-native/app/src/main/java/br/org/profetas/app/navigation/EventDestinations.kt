@@ -22,6 +22,7 @@ fun NavGraphBuilder.eventDestinations(container: AppContainer, eventsViewModel: 
             viewModel = eventsViewModel,
             accountId = accountId,
             profileName = profile?.name,
+            canManage = br.org.profetas.app.account.ContentAccess.canManage(profile),
             storageBaseUrl = container.storageBaseUrl,
             userMessages = container.userMessages,
             onNavigate = navigator::go,

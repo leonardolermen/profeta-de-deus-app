@@ -1,3 +1,19 @@
+# Roteiro 2.5.0 — 31/10/2026
+
+Instale `android-native/app/build/outputs/apk/debug/Profetas-de-Deus-2.5.0-Indicacoes.apk` como atualização no Android físico. Não desinstale nem limpe dados. Confira a versão 2.5.0 em Ajustes. A migração de indicações foi executada pelo responsável com sucesso; não execute os arquivos de fixtures de `supabase/tests/` no banco real.
+
+1. Como admin, vá a Início, abaixo de Próximos Eventos, e toque **Indicações > Adicionar indicação**. Cadastre um título e descrição, contato autorizado e link HTTPS opcional. Salve, procure na busca, abra o link, edite e confira a atualização. Excluir pede confirmação; use um item criado apenas para seu teste.
+2. Com uma conta membro confirmada, confira a mesma lista e busca. Os botões Adicionar/Editar/Excluir não devem aparecer. A tela de edição aberta por qualquer atalho deve negar acesso.
+3. Como admin, abra **Eventos > Criar novo evento**. Digite 07112026: deve virar 07/11/2026. Abra o calendário, escolha outro dia/mês/ano e confirme; cancelar deve preservar o campo. Sem data preenchida, deve abrir no dia e ano atuais. Teste também girar o telefone com o calendário aberto.
+4. No campo **Horário**, abaixo da data, digite 1930: deve virar 19:30. Não deve pedir AM/PM. Salve e reabra para editar: data e hora locais devem ser as mesmas. Teste 30/02, 24:00 e 19:60: a gravação deve ser recusada. Confira visualização na agenda, detalhe e compartilhamento.
+5. Com um membro, inscreva-se em um evento futuro com nome/telefone de teste autorizado. Como admin, abra o mesmo evento e **Ver inscritos neste evento**: devem aparecer nome e telefone, total e busca. Atualize depois de nova inscrição/cancelamento. Repita em um batismo. A lista de um evento não deve misturar inscritos de outro.
+6. Como membro, confira que o botão de inscritos não aparece, permanecendo apenas a inscrição pessoal. Sair e entrar como outra conta não pode revelar listas privadas do admin anterior. Eventos passados podem ser vistos pelo filtro da agenda e devem manter a consulta de inscritos para admin.
+7. Desligue a rede: erro de carga deve permitir tentar novamente; não exibir lista vazia como sucesso. Confira com fonte ampliada e no Redmi A3x.
+
+Em 31/10/2026, o responsável aprovou a versão 2.5.0 após o teste no celular: “está do jeito que eu queria”. Registro de aprovação geral da atualização; não foi apresentado resultado individual dos cenários de segurança, acessibilidade e falhas de rede. Este roteiro permanece para regressão e registro dos cenários específicos; a compilação/testes JVM não os substituem. Os roteiros anteriores abaixo preservam o histórico.
+
+---
+
 # Testar no celular — versão 2.4.0
 
 ## Preparar a segurança no Supabase

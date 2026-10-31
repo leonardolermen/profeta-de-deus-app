@@ -7,6 +7,17 @@ aniversariantes, pedidos de oração, inscrições, contatos e uma área de admi
 O aplicativo Expo/React Native que existia antes foi removido depois da conversão. As capturas de tela dele
 sobrevivem em `docs/referencia-visual/expo/` como referência visual.
 
+## Atualização 2.5.0 — 31/10/2026
+
+- **Início > Indicações**, logo abaixo dos próximos eventos: todos os membros confirmados consultam e pesquisam; administradores veem Adicionar indicação, Editar indicação e Excluir indicação (com confirmação).
+- Tela de cadastro/edição com título, descrição, contato opcional e link HTTPS opcional. Não há upload de imagens nesta versão. Publique contatos somente com autorização da pessoa indicada.
+- Eventos: data brasileira **dd/MM/aaaa**, calendário em português iniciando na data informada ou no dia/ano atual, e horário separado abaixo no padrão **HH:mm (24 horas)**. A digitação numérica insere as barras e os dois-pontos. A gravação continua com fuso do aparelho; eventos existentes não são alterados em lote.
+- **Eventos > abrir evento > Ver inscritos neste evento**, exclusivo de admin: lista com nome e telefone, total, pesquisa e atualização, inclusive para eventos passados. Inscrições continuam pessoais para membros; a lista geral da administração permanece.
+- `supabase/migrations/20261031000100_indicacoes.sql` cria a tabela e políticas de indicações. O responsável informou execução com “Success. No rows returned” em 31/10/2026; consulta REST anônima com limit=0 retornou HTTP 401. Não foram consultados contatos ou criadas contas/indicações de teste no servidor.
+- Testes de interface e fluxo completo membro/admin devem ser feitos no celular. Testes pgTAP preparados para permissões de indicações e isolamento de inscrições; não executados nesta etapa.
+
+Em 31/10/2026, o responsável aprovou a versão 2.5.0 após o teste no celular: “está do jeito que eu queria”. Registro de aprovação geral da atualização; não foi apresentado resultado individual dos cenários de segurança, acessibilidade e falhas de rede.
+
 ## Estrutura
 
 | Pasta | Conteúdo |
@@ -70,9 +81,9 @@ Para o planejamento de acesso restrito, consultar as [orientações de acesso pa
 ## Documentação
 
 - `docs/BIBLIA_LIVRE.md`: origem, licença e créditos da edição BLIVRE TR 2018.2.0, leitura offline e comparação de texto. Desde a versão 2.3.0 ela substitui a NVI na leitura do aplicativo.
-- `docs/ATUALIZACOES.md`: histórico consolidado das versões 2.1.0 a 2.4.0.
+- `docs/ATUALIZACOES.md`: histórico consolidado das versões 2.1.0 a 2.5.0.
 - `docs/PUBLICACAO_PLAY_STORE.md`: passo a passo de publicação e texto-base de atribuição para a ficha da loja; itens obrigatórios ainda pendentes estão sinalizados.
-- `docs/GUIA_TESTE_ANDROID.md`: roteiro atual da versão 2.4.0 para login, permissões, orações, fotos privadas, Bíblia e acessibilidade no celular. O emulador no notebook foi descontinuado por consumo de recursos.
+- `docs/GUIA_TESTE_ANDROID.md`: roteiro atual da versão 2.5.0 para login, permissões, orações, fotos privadas, Bíblia e acessibilidade no celular. O emulador no notebook foi descontinuado por consumo de recursos.
 - `docs/PESQUISA_HARPA_CRISTA.md`: pesquisa de API e licença; integração adiada até comprovar autorização para redistribuir as letras.
 
 - `android-native/README.md`: situação, pendências, modos de acesso, configuração e testes manuais.

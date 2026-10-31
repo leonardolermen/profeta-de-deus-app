@@ -68,11 +68,12 @@ fun NavGraphBuilder.adminDestinations(
     }
 }
 
-private fun NavGraphBuilder.admin(
+internal fun NavGraphBuilder.admin(
     pattern: String,
     container: AppContainer,
     adminViewModel: AdminViewModel,
     accountViewModel: AccountViewModel,
+    loadContent: Boolean = true,
     content: @Composable (NavBackStackEntry) -> Unit,
 ) {
     composable(pattern) { entry ->
@@ -90,7 +91,7 @@ private fun NavGraphBuilder.admin(
         }
 
         LaunchedEffect(isAdmin) {
-            if (isAdmin) {
+            if (isAdmin && loadContent) {
                 adminViewModel.loadIfEmpty()
             }
         }

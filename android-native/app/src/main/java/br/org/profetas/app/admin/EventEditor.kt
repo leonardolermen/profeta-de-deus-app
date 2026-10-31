@@ -50,7 +50,9 @@ private fun EventFields(
 
     var title by rememberSaveable { mutableStateOf(event?.title.orEmpty()) }
     var description by rememberSaveable { mutableStateOf(event?.description.orEmpty()) }
-    var date by rememberSaveable { mutableStateOf(event?.let { saved -> eventDateInput(saved.date, zone) }.orEmpty()) }
+    val date by rememberSaveable { mutableStateOf(event?.let { saved -> eventDateInput(saved.date, zone) }.orEmpty()) }
+    var day by rememberSaveable { mutableStateOf(date.substringBefore(' ')) }
+    var time by rememberSaveable { mutableStateOf(date.substringAfter(' ', "")) }
     var type by rememberSaveable { mutableStateOf(event?.type ?: EventType.CULTO) }
     var photo by rememberPhotoIntent()
 
@@ -65,12 +67,7 @@ private fun EventFields(
             onChange = { input -> description = input.take(MAX_DESCRIPTION_INPUT) },
         )
 
-        AppTextField(
-            label = "Data e hora",
-            value = date,
-            onChange = { input -> date = input },
-            placeholder = "aaaa-MM-dd HH:mm",
-        )
+        EventDateFields(day, time, { day = it }, { time = it })
 
         FieldHint("Horário local: ${zone.id}. Será salvo com fuso horário.")
 
@@ -96,7 +93,7 @@ private fun EventFields(
             val form = EventForm(
                 title = title,
                 description = description,
-                date = date,
+                date = "$day $time",
                 type = type,
                 imagePath = event?.imagePath,
             )

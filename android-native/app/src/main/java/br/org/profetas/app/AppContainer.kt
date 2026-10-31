@@ -57,6 +57,7 @@ class AppContainer(context: Context) {
     val events = EventRepository(client, guard)
     val weekly = WeeklyServiceRepository(client, guard)
     val registrations = RegistrationRepository(client, guard)
+    val recommendations = br.org.profetas.app.recommendation.RecommendationRepository(client, guard)
     val studies = StudyRepository(client, guard)
     val prayers = PrayerRepository(client, guard)
     val birthdays = BirthdayRepository(client, guard)

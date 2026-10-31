@@ -1,8 +1,14 @@
-# Implementado e pendências — versão 2.4.0
+# Implementado e pendências — versão 2.5.0
 
-Atualizado em 29/10/2026. Histórico por versão em `ATUALIZACOES.md`, evidências em `VALIDACAO_ANDROID.md` e roteiro de publicação em `PUBLICACAO_PLAY_STORE.md`. Documentos do plano Expo são históricos, não representam o aplicativo atual.
+Atualizado em 31/10/2026. Histórico por versão em `ATUALIZACOES.md`, evidências em `VALIDACAO_ANDROID.md` e roteiro de publicação em `PUBLICACAO_PLAY_STORE.md`. Documentos do plano Expo são históricos, não representam o aplicativo atual.
 
 ## Implementado
+
+- [x] Indicações para membros confirmados, com cadastro/edição/exclusão exclusivos de admin e migração aplicada pelo responsável. Consulta anônima negada (HTTP 401).
+- [x] Data brasileira e calendário em português no evento; horário separado de 24 horas, validação estrita e máscaras numéricas.
+- [x] Atalho de admin no detalhe do evento para nomes/telefones dos inscritos, com total, pesquisa e atualização.
+- [x] Atualização 2.5.0 aprovada pelo responsável após teste no celular em 31/10/2026.
+- [ ] Registrar os resultados por cenário do roteiro de regressão: contas membro/admin, logout, permissões, acessibilidade e falhas de rede. A aprovação geral não detalha cada cenário.
 
 - [x] Aplicativo Android Kotlin/Compose, sem dependência de Expo.
 - [x] Bíblia com lista visível de livros e pesquisa por livro, capítulo e versículo; leitura separada, navegação entre versículos/capítulos, modo contínuo, fonte ajustável e preferências locais.
@@ -15,7 +21,7 @@ Atualizado em 29/10/2026. Histórico por versão em `ATUALIZACOES.md`, evidênci
 - [x] Administração do conteúdo e upload de fotos; fotos do Supabase por endpoint autenticado. Compartilhamento da galeria envia referência textual, sem URL privada/token.
 - [x] Supabase existente reativado/configurado, contas administradoras já utilizadas pelo responsável; não é necessário criar outro projeto ou promover novamente a primeira conta.
 - [x] Migração `20261029000100_acesso_autenticado.sql` executada pelo responsável com sucesso. Conferência posterior: consultas anônimas às nove tabelas negadas com HTTP 401, função de confirmação false sem usuário.
-- [x] APK debug 2.4.0, 147 testes JUnit aprovados e lint com zero erros/30 avisos.
+- [x] APK debug 2.5.0, 156 testes JUnit aprovados e lint com zero erros/31 avisos.
 - [x] Feedback favorável do responsável sobre as modificações no celular. Não substitui a conferência detalhada de cada fluxo abaixo.
 - [x] Roteiro de publicação com licenças, créditos, texto-base para a ficha da loja, privacidade, acesso do avaliador e assinatura.
 

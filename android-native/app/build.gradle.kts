@@ -18,8 +18,8 @@ android {
         applicationId = "com.jlpsd.telasongmtdgky8qavduwwg50shqb"
         minSdk = 26
         targetSdk = 36
-        versionCode = 7
-        versionName = "2.4.0"
+        versionCode = 8
+        versionName = "2.5.0"
         buildConfigField("String", "SUPABASE_URL", "\"${config("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${config("SUPABASE_ANON_KEY")}\"")
     }

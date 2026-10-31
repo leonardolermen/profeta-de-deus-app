@@ -90,6 +90,8 @@ private fun MemberApp(container: AppContainer, initialRoute: Route?, accountView
     val birthdaysViewModel: BirthdaysViewModel = viewModel(factory = BirthdaysViewModel.Factory)
     val galleryViewModel: GalleryViewModel = viewModel(factory = GalleryViewModel.Factory)
     val adminViewModel: AdminViewModel = viewModel(factory = AdminViewModel.Factory)
+    val recommendationsViewModel: br.org.profetas.app.recommendation.RecommendationsViewModel = viewModel(factory = br.org.profetas.app.recommendation.RecommendationsViewModel.Factory)
+    val recommendationsState by recommendationsViewModel.state.collectAsStateWithLifecycle()
 
     val eventsState by eventsViewModel.state.collectAsStateWithLifecycle()
     val churchState by churchViewModel.state.collectAsStateWithLifecycle()
@@ -131,6 +133,8 @@ private fun MemberApp(container: AppContainer, initialRoute: Route?, accountView
     }
 
     val screen = when (visible) {
+        Route.Recommendations, is Route.RecommendationEditor -> VisibleScreen(recommendationsViewModel::reload, recommendationsState.loading)
+        is Route.EventRegistrations -> VisibleScreen(adminViewModel::reload, adminState.loading)
         Route.Home -> VisibleScreen(
             reload = {
                 eventsViewModel.reload()
@@ -231,6 +235,16 @@ private fun MemberApp(container: AppContainer, initialRoute: Route?, accountView
                     }
 
                     eventDestinations(container, eventsViewModel, navigator)
+
+                    composable(Route.Recommendations.pattern) {
+                        br.org.profetas.app.recommendation.RecommendationsScreen(recommendationsViewModel, navigator::go)
+                    }
+                    admin(Route.RecommendationEditor.PATTERN, container, adminViewModel, accountViewModel, loadContent = false) { entry ->
+                        br.org.profetas.app.recommendation.RecommendationEditor(entry.arguments?.getString("id").orEmpty(), recommendationsViewModel, navigator::back)
+                    }
+                    admin(Route.EventRegistrations.PATTERN, container, adminViewModel, accountViewModel) { entry ->
+                        br.org.profetas.app.admin.EventRegistrationsScreen(entry.arguments?.getString("id").orEmpty(), adminViewModel)
+                    }
 
                     bibleDestinations(container, bibleViewModel, studiesViewModel, navigator)
 

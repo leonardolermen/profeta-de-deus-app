@@ -1,6 +1,17 @@
 # Histórico das atualizações Android
 
-Consolidado em 29/10/2026. Versão atual: **2.4.0**, versionCode **7**. Este histórico descreve o que existe; pendências e sugestões não devem ser anunciadas como funções prontas. O quadro atual está em `03_TAREFAS.md`.
+Consolidado em 31/10/2026. Versão atual: **2.5.0**, versionCode **8**. Este histórico descreve o que existe; pendências e sugestões não devem ser anunciadas como funções prontas. O quadro atual está em `03_TAREFAS.md`.
+
+## Atualização 2.5.0 — 31/10/2026
+
+- **Início > Indicações**, logo abaixo dos próximos eventos: todos os membros confirmados consultam e pesquisam; administradores veem Adicionar indicação, Editar indicação e Excluir indicação (com confirmação).
+- Tela de cadastro/edição com título, descrição, contato opcional e link HTTPS opcional. Não há upload de imagens nesta versão. Publique contatos somente com autorização da pessoa indicada.
+- Eventos: data brasileira **dd/MM/aaaa**, calendário em português iniciando na data informada ou no dia/ano atual, e horário separado abaixo no padrão **HH:mm (24 horas)**. A digitação numérica insere as barras e os dois-pontos. A gravação continua com fuso do aparelho; eventos existentes não são alterados em lote.
+- **Eventos > abrir evento > Ver inscritos neste evento**, exclusivo de admin: lista com nome e telefone, total, pesquisa e atualização, inclusive para eventos passados. Inscrições continuam pessoais para membros; a lista geral da administração permanece.
+- `supabase/migrations/20261031000100_indicacoes.sql` cria a tabela e políticas de indicações. O responsável informou execução com “Success. No rows returned” em 31/10/2026; consulta REST anônima com limit=0 retornou HTTP 401. Não foram consultados contatos ou criadas contas/indicações de teste no servidor.
+- Testes de interface e fluxo completo membro/admin devem ser feitos no celular. Testes pgTAP preparados para permissões de indicações e isolamento de inscrições; não executados nesta etapa.
+
+- APK debug gerado; 156 testes JVM aprovados, lint com zero erros/31 avisos. Em 31/10/2026, o responsável aprovou a versão 2.5.0 após o teste no celular: “está do jeito que eu queria”. Registro de aprovação geral da atualização; não foi apresentado resultado individual dos cenários de segurança, acessibilidade e falhas de rede. Evidências em `VALIDACAO_ANDROID.md`.
 
 ## 2.4.0 — acesso autenticado e publicação
 

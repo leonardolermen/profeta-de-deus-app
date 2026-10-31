@@ -2,6 +2,17 @@
 
 Aplicativo Kotlin + Jetpack Compose. Abra **esta pasta** no Android Studio. Não é necessário Node, Expo ou uma conta Apple para compilar o Android. O backend fica em `../supabase/` (veja o README da raiz).
 
+## Atualização 2.5.0 — 31/10/2026
+
+- **Início > Indicações**, logo abaixo dos próximos eventos: todos os membros confirmados consultam e pesquisam; administradores veem Adicionar indicação, Editar indicação e Excluir indicação (com confirmação).
+- Tela de cadastro/edição com título, descrição, contato opcional e link HTTPS opcional. Não há upload de imagens nesta versão. Publique contatos somente com autorização da pessoa indicada.
+- Eventos: data brasileira **dd/MM/aaaa**, calendário em português iniciando na data informada ou no dia/ano atual, e horário separado abaixo no padrão **HH:mm (24 horas)**. A digitação numérica insere as barras e os dois-pontos. A gravação continua com fuso do aparelho; eventos existentes não são alterados em lote.
+- **Eventos > abrir evento > Ver inscritos neste evento**, exclusivo de admin: lista com nome e telefone, total, pesquisa e atualização, inclusive para eventos passados. Inscrições continuam pessoais para membros; a lista geral da administração permanece.
+- `supabase/migrations/20261031000100_indicacoes.sql` cria a tabela e políticas de indicações. O responsável informou execução com “Success. No rows returned” em 31/10/2026; consulta REST anônima com limit=0 retornou HTTP 401. Não foram consultados contatos ou criadas contas/indicações de teste no servidor.
+- Testes de interface e fluxo completo membro/admin devem ser feitos no celular. Testes pgTAP preparados para permissões de indicações e isolamento de inscrições; não executados nesta etapa.
+
+Em 31/10/2026, o responsável aprovou a versão 2.5.0 após o teste no celular: “está do jeito que eu queria”. Registro de aprovação geral da atualização; não foi apresentado resultado individual dos cenários de segurança, acessibilidade e falhas de rede.
+
 ## Atualização 2.4.0 — 29/10/2026
 
 - Login inicial obrigatório para a área do aplicativo, incluindo Bíblia e ações pessoais. Cadastro/recuperação continuam acessíveis. Login e sessão retornada pelo cadastro exigem e-mail confirmado; aprovação manual não foi habilitada, conforme escolha do responsável.

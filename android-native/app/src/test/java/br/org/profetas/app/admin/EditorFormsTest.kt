@@ -10,7 +10,7 @@ import java.time.ZoneId
 class EditorFormsTest {
 
     @Test fun eventDraftKeepsPhotoPathAndSavesOffset() {
-        val form = EventForm(" Vigília ", "", "2026-11-07 22:00", EventType.CULTO, imagePath = "2026/a.jpg")
+        val form = EventForm(" Vigília ", "", "07/11/2026 22:00", EventType.CULTO, imagePath = "2026/a.jpg")
 
         val draft = form.toDraft(ZoneId.of("America/Sao_Paulo"))
 
