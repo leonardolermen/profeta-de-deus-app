@@ -67,6 +67,10 @@ Guia de envio à loja, com licenças, créditos, privacidade, bloqueios pendente
 
 Histórico completo das mudanças: **[ATUALIZACOES.md](docs/ATUALIZACOES.md)**. Implementado, pendente e melhorias futuras: **[03_TAREFAS.md](docs/03_TAREFAS.md)**. Em 29/10/2026 o responsável deu feedback favorável sobre as modificações no celular; os testes detalhados ainda precisam ser registrados por cenário.
 
+## Próxima atualização planejada — 01/11/2026
+
+Ícones consistentes com o rodapé (aguardando escolha), versículo do dia manual/automático às 05:00 de Brasília com notificações e aba de ofertas com Pix sob gestão financeira restrita. Propostas ainda não implementadas, com regras a confirmar: [PROXIMA_ATUALIZACAO.md](docs/PROXIMA_ATUALIZACAO.md).
+
 ## Possíveis melhorias futuras
 
 - Avaliar uma versão web para notebook com modo de projeção da Bíblia em TV/projetor: pesquisa e controles no notebook, passagem em tela cheia na segunda tela, letras grandes, alto contraste e navegação pelo teclado. Proposta ainda não implementada, sem prazo ou compromisso de execução; depende da decisão da equipe e da igreja e da avaliação de equipamentos, custos e manutenção. Detalhes em [PROPOSTA_PROJECAO_BIBLIA.md](docs/PROPOSTA_PROJECAO_BIBLIA.md).

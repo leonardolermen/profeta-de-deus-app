@@ -45,6 +45,13 @@ Atualizado em 31/10/2026. Histórico por versão em `ATUALIZACOES.md`, evidênci
 - [ ] Conferir modo avião após login, acessibilidade/fonte ampliada, notificações, teclado e desempenho nos aparelhos de teste. Dispositivos mencionados pelo responsável: Samsung S23 e Redmi A3x; o feedback geral não é um relatório completo por aparelho.
 - [ ] Cadastrar/revisar o conteúdo oficial da igreja e remover dados de demonstração antes de publicar.
 
+## Próximas etapas solicitadas — 01/11/2026
+
+- [ ] Escolher o estilo dos ícones de Oração, Projetos, Aniversários e boas-vindas; comparar a prévia em `propostas/icones-proxima-atualizacao.png`.
+- [ ] Versículo do dia na Início, seleção manual por admin e modo automático compartilhado às 05:00 de Brasília, histórico e notificações opcionais.
+- [ ] Aba Ofertas com chave Pix única e projetos; gestão restrita, proposta de aprovação dupla, auditoria e alertas administrativos. A mesma chave copiada não identifica finalidade nem confirma pagamento.
+- [ ] Confirmar decisões e testar segurança, acessibilidade, offline e concorrência. Planejamento detalhado, fontes e ordem sugerida em `PROXIMA_ATUALIZACAO.md`; nenhuma destas funções foi implementada.
+
 ## Melhorias futuras, ainda não implementadas
 
 - Versão web para notebook com modo de projeção da Bíblia em TV/projetor, controles separados e navegação pelo teclado. Apenas possibilidade para avaliação da equipe e da igreja; sem aprovação de execução ou prazo. Escopo e viabilidade em `PROPOSTA_PROJECAO_BIBLIA.md`.
@@ -52,4 +59,4 @@ Atualizado em 31/10/2026. Histórico por versão em `ATUALIZACOES.md`, evidênci
 - Seletor de outras traduções, somente com licença e edição verificadas. TR/N4 da BLIVRE não são opções de linguagem antiga/moderna.
 - Convite/aprovação para permitir apenas membros conhecidos: adiado por decisão do responsável.
 - Harpa Cristã: integração adiada; autorização de redistribuição do catálogo não foi comprovada.
-- Sincronização de favoritos e estudos entre aparelhos, notificações push, pagamentos/dízimos, transmissão ao vivo, chat e anexos.
+- Sincronização de favoritos e estudos entre aparelhos, conciliação financeira, transmissão ao vivo, chat e anexos. Notificações do versículo e tela informativa de ofertas estão no próximo planejamento acima.
