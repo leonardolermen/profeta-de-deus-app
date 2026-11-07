@@ -71,6 +71,8 @@ Histórico completo das mudanças: **[ATUALIZACOES.md](docs/ATUALIZACOES.md)**. 
 
 Ícones consistentes com o rodapé (aguardando escolha), versículo do dia manual/automático às 05:00 de Brasília com notificações e aba de ofertas com Pix sob gestão financeira restrita. Propostas ainda não implementadas, com regras a confirmar: [PROXIMA_ATUALIZACAO.md](docs/PROXIMA_ATUALIZACAO.md).
 
+- **Fortalecer a política de senhas.** Exigir um comprimento mínimo adequado e bloquear senhas comuns, previsíveis ou conhecidas em vazamentos no cadastro, na troca e na redefinição de senha. Aplicar a regra no servidor para todas as contas. Para administradores, avaliar a exigência de autenticação em dois fatores e a revisão das senhas existentes.
+
 ## Possíveis melhorias futuras
 
 - Avaliar uma versão web para notebook com modo de projeção da Bíblia em TV/projetor: pesquisa e controles no notebook, passagem em tela cheia na segunda tela, letras grandes, alto contraste e navegação pelo teclado. Proposta ainda não implementada, sem prazo ou compromisso de execução; depende da decisão da equipe e da igreja e da avaliação de equipamentos, custos e manutenção. Detalhes em [PROPOSTA_PROJECAO_BIBLIA.md](docs/PROPOSTA_PROJECAO_BIBLIA.md).
