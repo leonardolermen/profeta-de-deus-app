@@ -73,6 +73,7 @@ Histórico completo das mudanças: **[ATUALIZACOES.md](docs/ATUALIZACOES.md)**. 
 
 - **Fortalecer a política de senhas.** Exigir um comprimento mínimo adequado e bloquear senhas comuns, previsíveis ou conhecidas em vazamentos no cadastro, na troca e na redefinição de senha. Aplicar a regra no servidor para todas as contas. Para administradores, avaliar a exigência de autenticação em dois fatores e a revisão das senhas existentes.
 - **Adaptar a logo da tela inicial ao tema.** No modo escuro, usar fundo escuro e inverter a cor do pássaro para um tom claro, com contraste adequado. Alternar a versão da logo assim que a pessoa trocar o tema no aplicativo.
+- **Controlar o tamanho das mídias e o armazenamento.** Melhoria solicitada em 24/11/2026 para limitar cada imagem ou arquivo enviado a 3 MB, bloquear arquivos maiores e aproveitar a compressão de imagens já existente. Avisar os administradores ao atingir 50%, 80% e 90% do armazenamento disponível e oferecer um botão Revisar mídias para escolher o que excluir ou manter. Detalhes em [PROXIMA_ATUALIZACAO.md](docs/PROXIMA_ATUALIZACAO.md).
 
 ## Possíveis melhorias futuras
 

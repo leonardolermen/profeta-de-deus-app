@@ -70,6 +70,20 @@ Símbolos sugeridos: coração acolhido/mãos para Oração; colaboração para 
 - Conferir o enquadramento da igreja e da arrecadação nas regras de pagamentos/doações da Google Play antes da publicação; a política distingue doações isentas de tributos. Não presumir que toda arrecadação religiosa tenha automaticamente esse enquadramento. Confirmar documentação aplicável com os responsáveis e, quando necessário, obter orientação especializada.
 - Rever a política de privacidade, dados de dispositivos/notificações, registros administrativos e conteúdo financeiro apresentado, além dos bloqueios de publicação já existentes em `PUBLICACAO_PLAY_STORE.md`.
 
+## 4. Limite de mídias, compressão e controle de armazenamento
+
+Requisitos solicitados em 24/11/2026 para ajudar a manter o projeto dentro do plano gratuito.
+
+- Limitar a 3 MB cada imagem ou arquivo enviado pelos fluxos de mídia do aplicativo. Bloquear arquivos originais acima desse limite antes do processamento, com mensagem clara para o administrador escolher um arquivo menor.
+- Reutilizar a compressão já existente, que gera JPEG com qualidade 80 e maior lado de até 1.600 pixels. Avaliar ajustes para economizar espaço preservando a legibilidade dos cartazes e conferir também o limite de 3 MB no arquivo resultante antes de enviar.
+- Aplicar a restrição de tamanho no app e no Supabase Storage. Padronizar o valor em bytes na implementação para que os dois usem o mesmo limite. Os tipos aceitos devem seguir os fluxos de mídia suportados pelo app.
+- Mostrar aos administradores o espaço ocupado e disponível, em tamanho e percentual. Considerar o total de imagens e demais arquivos armazenados no projeto, incluindo os buckets de eventos e galeria.
+- Exibir avisos ao atingir 50%, 80% e 90% da capacidade disponível. A base inicial é a franquia de 1 GB de armazenamento do plano gratuito. Calcular os avisos pelo espaço ocupado, independentemente da quantidade de fotos.
+- Incluir nos avisos e na área administrativa um botão Revisar mídias. A tela deve apresentar prévia ou nome, data, tamanho e vínculo com evento ou galeria para apoiar a decisão do administrador sobre quais arquivos manter e quais excluir.
+- Pedir confirmação da exclusão escolhida pelo administrador e atualizar o indicador após a operação. Usar a API de Storage para remover o arquivo e tratar suas referências no aplicativo, com tratamento de falhas e tentativas repetidas. A limpeza será uma decisão manual dos responsáveis.
+- Distinguir o espaço ocupado atual do indicador de uso médio do ciclo no Supabase. Manter o acompanhamento de transferência mensal separado do armazenamento, pois excluir arquivos libera espaço e a transferência já consumida segue contabilizada no ciclo.
+- Validar os limites nos casos abaixo de 3 MB, no limite e acima dele, os três percentuais de aviso, as permissões administrativas, a legibilidade após compressão e a consistência de exclusão quando houver falha de rede.
+
 ## Ordem proposta para o próximo trabalho
 
 1. Escolher a direção dos ícones e o rótulo/posição da nova aba. Confirmar regras de manter versículo, conjunto aleatório, responsáveis financeiros e aprovação dupla.

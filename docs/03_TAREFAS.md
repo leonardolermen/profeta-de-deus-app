@@ -50,6 +50,7 @@ Atualizado em 31/10/2026. Histórico por versão em `ATUALIZACOES.md`, evidênci
 - [ ] Escolher o estilo dos ícones de Oração, Projetos, Aniversários e boas-vindas; comparar a prévia em `propostas/icones-proxima-atualizacao.png`.
 - [ ] Versículo do dia na Início, seleção manual por admin e modo automático compartilhado às 05:00 de Brasília, histórico e notificações opcionais.
 - [ ] Aba Ofertas com chave Pix única e projetos; gestão restrita, proposta de aprovação dupla, auditoria e alertas administrativos. A mesma chave copiada não identifica finalidade nem confirma pagamento.
+- [ ] Melhoria solicitada em 24/11/2026 para bloquear imagens ou arquivos acima de 3 MB, aproveitar a compressão existente, avisar administradores em 50%, 80% e 90% de armazenamento ocupado e oferecer Revisar mídias com escolha do que manter ou excluir.
 - [ ] Confirmar decisões e testar segurança, acessibilidade, offline e concorrência. Planejamento detalhado, fontes e ordem sugerida em `PROXIMA_ATUALIZACAO.md`; nenhuma destas funções foi implementada.
 
 ## Melhorias futuras, ainda não implementadas
