@@ -7,6 +7,14 @@ aniversariantes, pedidos de oração, inscrições, contatos e uma área de admi
 O aplicativo Expo/React Native que existia antes foi removido depois da conversão. As capturas de tela dele
 sobrevivem em `docs/referencia-visual/expo/` como referência visual.
 
+## Prioridade da próxima atualização — confirmação de e-mail (26/11/2026)
+
+- **Criar uma página simples de retorno após a confirmação de e-mail**, substituindo o redirecionamento atual para `localhost:3000`. O responsável escolheu a página pública simples; implementação e publicação ficam para a próxima etapa, não para esta alteração de documentação.
+- Em confirmação bem-sucedida, orientar: **“E-mail confirmado! Volte ao aplicativo Assembleia de Deus Renovação da Aliança e entre com seu e-mail e senha.”** Tratar links expirados, inválidos e falhas com mensagem própria, sem afirmar sucesso indevidamente.
+- A página deve exibir apenas orientações genéricas, sem listar contas, e-mails ou dados privados. Acessar a página por si só não confirma nenhuma conta; a confirmação depende da validação do link pelo Supabase. Não incorporar chaves privadas nem registrar ou divulgar tokens dos links.
+- Definir a hospedagem gratuita (GitHub Pages é uma opção), configurar o endereço HTTPS no Supabase Auth e testar confirmação válida, link inválido/expirado e retorno ao aplicativo. Conferir também que a recuperação de senha continua funcionando.
+- **Prioridade alta:** facilitar o primeiro acesso dos membros e eliminar a página de erro após a confirmação. A página ainda não está implementada ou publicada.
+
 ## Atualização 2.5.0 — 31/10/2026
 
 - **Início > Indicações**, logo abaixo dos próximos eventos: todos os membros confirmados consultam e pesquisam; administradores veem Adicionar indicação, Editar indicação e Excluir indicação (com confirmação).
